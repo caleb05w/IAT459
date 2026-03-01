@@ -5,6 +5,10 @@ import Login from "./Login";
 import Register from "./Register";
 import Dashboard from "./Dashboard";
 import { Agentation } from "agentation";
+import ProtectedRoute from "./ProtectedRoute";
+
+//need to make auth provider globally available!
+import { AuthProvider } from "./context/AuthContext";
 
 //TODO
 //Dashboard View
@@ -15,16 +19,24 @@ import { Agentation } from "agentation";
 //app is where we will house all our routes.
 function App() {
   return (
-    <>
+    <AuthProvider>
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          {/* //render dashboard only if user has logged in (checked via protecter route.) */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Router>
       {process.env.NODE_ENV === "development" && <Agentation />}
-    </>
+    </AuthProvider>
   );
 }
 
