@@ -37,8 +37,7 @@ async function connectDB() {
 connectDB();
 
 // routes
-// app.use("/api/plants", plantRoutes)
-// app.use("/api/auth", authRoutes)
+app.use("/api/auth", authRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
