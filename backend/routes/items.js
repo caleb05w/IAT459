@@ -1,42 +1,42 @@
 //this route is for testItem, and is temporary for now.
 
-const express = require("express");
-const router = express.Router();
+const express = require("express")
+const router = express.Router()
 //model that we are going ot be using.
-const TestComponent = require("../models/testComponent");
+const TestComponent = require("../models/testComponent")
 //permissions
-const verifyToken = require("../middleware/authMiddleware");
+const verifyToken = require("../middleware/authMiddleware")
 
 //Pass item
 
 router.post("/dashboard", async (req, res) => {
   try {
     //first extrat
-    const { name, description, color } = req.body;
+    const {name, description, color} = req.body
     //wrap it in a new Item iteration of testComponent
-    const newItem = new TestComponent({ name, description, color });
-    await newItem.save();
-    console.log("Item saved", newItem);
-    res.status(201).json({ message: "Saved item." });
+    const newItem = new TestComponent({name, description, color})
+    await newItem.save()
+    console.log("Item saved", newItem)
+    res.status(201).json({message: "Saved item."})
     //desctructure the content
     // const {name, description, colour} = req.body
     // const {}
     // await newItem.save.
   } catch (e) {
-    console.warn("issue saving item", e);
+    console.warn("issue saving item", e)
   }
-});
+})
 
 //get item
 router.get("/dashboard", async (req, res) => {
   try {
-    const items = await TestComponent.find();
-    res.json(items);
+    const items = await TestComponent.find()
+    res.json(items)
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({message: err.message})
   }
-});
-module.exports = router;
+})
+module.exports = router
 //need this to prevent crash
 
 //reference form assignment
