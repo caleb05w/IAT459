@@ -43,7 +43,7 @@ router.post("/login", async (req, res) => {
     if (!user) return res.status(400).json({message: "User not found"})
 
     //search passwords
-    const isMatch = await bycrypt.compare(password, user.password)
+    const isMatch = await bcrypt.compare(password, user.password)
     // fallback if no passwords match. Basically says no matching password
     if (!isMatch) return res.status(400).json({message: "Invalid credentials"})
 

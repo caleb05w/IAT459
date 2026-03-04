@@ -1,14 +1,14 @@
-import "./App.css";
+import "./App.css"
 //to use routes, we will need to set them up here through react-router-dom
-import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import Login from "./Login";
-import Register from "./Register";
-import Dashboard from "./Dashboard";
-import { Agentation } from "agentation";
-import ProtectedRoute from "./ProtectedRoute";
+import {Route, BrowserRouter as Router, Routes} from "react-router-dom"
+import Login from "./pages/Login"
+import Register from "./pages/Register"
+import Dashboard from "./pages/Dashboard"
+import {Agentation} from "agentation"
+import ProtectedRoute from "./ProtectedRoute"
 
 //need to make auth provider globally available!
-import { AuthProvider } from "./context/AuthContext";
+import {AuthProvider} from "./context/AuthContext"
 
 //TODO
 //Dashboard View
@@ -22,11 +22,11 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path='/login' element={<Login />} />
+          <Route path='/register' element={<Register />} />
           {/* //render dashboard only if user has logged in (checked via protecter route.) */}
           <Route
-            path="/"
+            path='/'
             element={
               <ProtectedRoute>
                 <Dashboard />
@@ -37,7 +37,7 @@ function App() {
       </Router>
       {process.env.NODE_ENV === "development" && <Agentation />}
     </AuthProvider>
-  );
+  )
 }
 
-export default App;
+export default App
