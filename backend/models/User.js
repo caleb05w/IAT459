@@ -10,6 +10,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  figmaToken: {
+    type: String,
+    required: false,
+  },
   fName: {
     type: String,
     required: false,
