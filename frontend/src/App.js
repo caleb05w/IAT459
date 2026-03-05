@@ -1,18 +1,19 @@
-import "./App.css"
+import "./App.css";
 //to use routes, we will need to set them up here through react-router-dom
-import {Route, BrowserRouter as Router, Routes} from "react-router-dom"
-import Login from "./pages/Login"
-import Register from "./pages/Register"
-import Dashboard from "./pages/Dashboard"
-import {Agentation} from "agentation"
-import ProtectedRoute from "./ProtectedRoute"
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import { Agentation } from "agentation";
+import ProtectedRoute from "./ProtectedRoute";
 
 //need to make auth provider globally available!
-import {AuthProvider} from "./context/AuthContext"
+import { AuthProvider } from "./context/AuthContext";
 
 //TODO
-//Dashboard View
-//Login + Register
+// Delete logic
+//middleware check on add and delete routes
+//render for normal people ?
 
 //protected routes
 
@@ -22,11 +23,11 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path='/login' element={<Login />} />
-          <Route path='/register' element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           {/* //render dashboard only if user has logged in (checked via protecter route.) */}
           <Route
-            path='/'
+            path="/"
             element={
               <ProtectedRoute>
                 <Dashboard />
@@ -35,9 +36,10 @@ function App() {
           />
         </Routes>
       </Router>
-      {process.env.NODE_ENV === "development" && <Agentation />}
+      {process.env.NODE_ENV === "development"}
+      {/* {process.env.NODE_ENV === "development" && <Agentation />} */}
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+export default App;

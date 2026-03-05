@@ -40,7 +40,7 @@ export function AuthProvider({ children }) {
   function login(newToken) {
     localStorage.setItem("token", newToken);
     setToken(newToken);
-    console.log("login successful");
+    console.log("login successful", newToken);
   }
 
   //value is what is made globally available. In this case, the login, logout function, aswell as the user and the token.

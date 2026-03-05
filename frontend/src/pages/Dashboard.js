@@ -36,11 +36,34 @@ export default function Dashboard() {
     }
   };
 
+  const handleDelete = async (id) => {
+    try {
+      // tell Backend to delete the document with this specific ID
+      const res = await fetch(
+        `http://localhost:${PORT}/api/items/dashboard/${id}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `${token}` },
+        },
+      );
+
+      // res.json(200)
+
+      // update Frontend: Keep all plants EXCEPT the one we just deleted
+      setItems(items.filter((item) => item._id !== id));
+    } catch (e) {
+      console.warn("Issue deleting item", e);
+    }
+  };
+
   const saveitems = async (item) => {
     try {
       const res = await fetch(`http://localhost:${PORT}/api/items/dashboard`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`,
+        },
         body: JSON.stringify({
           name: item.name,
           description: item.description,
@@ -96,6 +119,7 @@ export default function Dashboard() {
                 header={items.name}
                 body={items.description}
                 color={items.color}
+                deleteItem={() => handleDelete(items._id)}
               />
             ))
           ) : (

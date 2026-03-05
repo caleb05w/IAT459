@@ -9,7 +9,7 @@ const verifyToken = require("../middleware/authMiddleware");
 
 //Pass item
 
-router.post("/dashboard", async (req, res) => {
+router.post("/dashboard", verifyToken, async (req, res) => {
   try {
     //first extrat
     const { name, description, color } = req.body;
@@ -24,6 +24,16 @@ router.post("/dashboard", async (req, res) => {
     // await newItem.save.
   } catch (e) {
     console.warn("issue saving item", e);
+  }
+});
+
+//deleteItem.
+router.delete("/dashboard/:id", verifyToken, async (req, res) => {
+  try {
+    await TestComponent.findByIdAndDelete(req.params.id);
+    res.json({ message: "Item deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 
