@@ -1,166 +1,226 @@
-import { useContext, useEffect, useState } from "react"
-import { AuthContext } from "../context/AuthContext"
-import { useNavigate } from "react-router-dom"
-import { jwtDecode } from "jwt-decode"
-import { LuRefreshCw } from "react-icons/lu"
+import {useContext, useEffect, useState} from "react"
+import {AuthContext} from "../context/AuthContext"
+import {useNavigate} from "react-router-dom"
+import {jwtDecode} from "jwt-decode"
+import {LuRefreshCw} from "react-icons/lu"
 import Button from "../components/Button"
 import DashboardCard from "../components/DashboardCard"
-import AddItemDropdown from "../components/AddItemDropdown"
 import Sidebar from "../components/Sidebar"
+import CreateTeamModal from "../components/CreateTeamModal"
+import {extractTeamId} from "../utils/extractTeamId"
 
-const FILTERS = ["All", "In Review", "Developing", "Redesign"]
 const PORT = 5001
 
 export default function Dashboard() {
-  const { token, logout } = useContext(AuthContext)
+  const {token, logout} = useContext(AuthContext)
   const navigate = useNavigate()
 
   const [username, setUsername] = useState("")
-  const [items, setItems] = useState([])
-  const [item, setItem] = useState({ name: "", description: "", color: "" })
+  const [teams, setTeams] = useState([])
   const [activeNav, setActiveNav] = useState("Recents")
-  const [activeTeam, setActiveTeam] = useState("Team 1")
-  const [activeFilter, setActiveFilter] = useState("All")
+  const [activeTeam, setActiveTeam] = useState(null)
+  const [components, setComponents] = useState([])
   const [refreshing, setRefreshing] = useState(false)
+  const [showCreateTeam, setShowCreateTeam] = useState(false)
 
-  const loadItems = async () => {
+  // ── Load components for active team ───────────────────────
+  const loadComponents = async (teamId) => {
     try {
-      const res = await fetch(`http://localhost:${PORT}/api/items/dashboard`, {
-        method: "GET",
-      })
-      const loadedItems = await res.json()
+      const res = await fetch(
+        `http://localhost:${PORT}/api/teams/${teamId}/components`,
+        {headers: {Authorization: `Bearer ${token}`}},
+      )
+      const data = await res.json()
       if (res.ok) {
-        setItems(loadedItems)
-        console.log("data fetched", loadedItems)
+        setComponents(data)
+      } else if (res.status === 401) {
+        logout()
+        navigate("/login")
       } else {
-        console.warn("network rejected pull")
+        console.warn("Failed to fetch components:", data.error)
       }
     } catch (e) {
-      console.warn("issue fetching items", e)
+      console.warn("issue fetching components", e)
     }
   }
 
-  const saveItems = async (item) => {
+  // ── Create team ───────────────────────────────────────────
+  const createTeam = async ({name, url}) => {
     try {
-      await fetch(`http://localhost:${PORT}/api/items/dashboard`, {
+      const externalId = extractTeamId(url)
+      const res = await fetch(`http://localhost:${PORT}/api/teams`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: item.name,
-          description: item.description,
-          color: item.color,
-        }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({name, externalId}),
       })
+      const data = await res.json()
+      if (res.ok) {
+        setTeams((prev) => [...prev, data])
+        setActiveTeam(data)
+      } else {
+        console.warn("Failed to create team:", data.message)
+      }
     } catch (e) {
-      console.warn("issue saving items", e)
+      console.warn("Error creating team:", e)
     }
   }
 
+  // ── Refresh ───────────────────────────────────────────────
   const handleRefresh = () => {
     setRefreshing(true)
-    loadItems().finally(() => setRefreshing(false))
+    const fetches = [
+      fetch(`http://localhost:${PORT}/api/teams`, {
+        headers: {Authorization: `Bearer ${token}`},
+      }).then((r) => {
+        if (r.status === 401) {
+          logout()
+          navigate("/login")
+          return
+        }
+        return r.json().then((data) => setTeams(data))
+      }),
+      activeTeam
+        ? fetch(
+            `http://localhost:${PORT}/api/teams/${activeTeam._id}/components`,
+            {headers: {Authorization: `Bearer ${token}`}},
+          ).then((r) => {
+            if (r.status === 401) {
+              logout()
+              navigate("/login")
+              return
+            }
+            return r.json().then((data) => setComponents(data))
+          })
+        : Promise.resolve(),
+    ]
+    Promise.all(fetches).finally(() => setRefreshing(false))
   }
 
+  // ── Logout ────────────────────────────────────────────────
   const handleLogout = () => {
     logout()
     navigate("/login")
   }
 
-  useEffect(() => {
-    loadItems()
-  }, [])
+  // ── Effects ───────────────────────────────────────────────
 
+  // load teams — defined inside effect so token is always fresh
+  useEffect(() => {
+    if (!token) return
+
+    const loadTeams = async () => {
+      try {
+        const res = await fetch(`http://localhost:${PORT}/api/teams`, {
+          headers: {Authorization: `Bearer ${token}`},
+        })
+        const data = await res.json()
+        if (res.ok) {
+          setTeams(data)
+          setActiveTeam((prev) => prev ?? data[0] ?? null)
+        } else if (res.status === 401) {
+          logout()
+          navigate("/login")
+        } else {
+          console.warn("Failed to fetch teams:", data.error)
+        }
+      } catch (e) {
+        console.warn("issue fetching teams", e)
+      }
+    }
+
+    loadTeams()
+  }, [token, logout, navigate])
+
+  // decode username from token
   useEffect(() => {
     if (token) {
       const user = jwtDecode(token)
       setUsername(user.username)
-    } else {
-      console.log("no user detected, or no token")
     }
   }, [token])
 
-  const filteredItems = activeFilter === "All"
-    ? items
-    : items.filter((c) => c.status === activeFilter)
+  // load components when active team changes
+  useEffect(() => {
+    if (activeTeam) loadComponents(activeTeam._id)
+  }, [activeTeam])
 
+  // ── Render ────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex bg-[#f5f5f3]">
+    <div className='min-h-screen flex bg-[#f5f5f3]'>
       <Sidebar
         activeNav={activeNav}
         setActiveNav={setActiveNav}
         activeTeam={activeTeam}
         setActiveTeam={setActiveTeam}
+        teams={teams}
         username={username}
+        setShowCreateTeam={setShowCreateTeam}
       />
 
-      {/* Main */}
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className='flex-1 flex flex-col min-w-0'>
         {/* Topbar */}
-        <div className="flex items-center justify-between px-8 py-4 border-b border-gray-100 bg-white">
-          <span className="text-[18px] text-gray-800 font-medium">Dashboard</span>
-          <div className="flex items-center gap-3">
+        <div className='flex items-center justify-between px-8 py-4 border-b border-gray-100 bg-white'>
+          <span className='text-[18px] text-gray-800 font-medium'>
+            Dashboard
+          </span>
+          <div className='flex items-center gap-3'>
             <button
               onClick={handleRefresh}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors shadow-sm"
-            >
-              <LuRefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+              className='flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors shadow-sm'>
+              <LuRefreshCw
+                className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
+              />
               Refresh
             </button>
-            <Button body="Logout" onClick={handleLogout} />
+            <Button body='Logout' onClick={handleLogout} />
           </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 px-8 pt-6 pb-8">
-          {/* Greeting + team title */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-semibold text-gray-900">
+        <div className='flex-1 px-8 pt-6 pb-8'>
+          <div className='mb-6'>
+            <h1 className='text-2xl font-semibold text-gray-900'>
               Welcome, {username}
             </h1>
-            <p className="text-sm text-gray-400 mt-0.5">{activeTeam}</p>
+            <p className='text-sm text-gray-400 mt-0.5'>
+              {activeTeam ? activeTeam.name : "No team selected"}
+            </p>
           </div>
 
-          <div className="border-b border-gray-200 mb-6" />
+          <div className='border-b border-gray-200 mb-6' />
 
-          {/* Filters */}
-          <div className="flex items-center gap-2 mb-6">
-            {FILTERS.map((f) => (
-              <button
-                key={f}
-                onClick={() => setActiveFilter(f)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors
-                  ${activeFilter === f
-                    ? "bg-white border-gray-400 text-gray-900 shadow-sm"
-                    : "border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700 bg-transparent"
-                  }`}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-
-          {/* Cards */}
-          <div className="flex flex-col gap-4 mb-12">
-            {filteredItems.length > 0 ? (
-              filteredItems.map((item, i) => (
+          {!activeTeam ? (
+            <div className='flex items-center justify-center h-48 text-gray-400 text-sm'>
+              Select or create a team to get started
+            </div>
+          ) : components.length > 0 ? (
+            <div>
+              {components.map((component, i) => (
                 <DashboardCard
                   key={i}
-                  header={item.name}
-                  body={item.description}
-                  color={item.color}
+                  header={component.name}
+                  body={component.description}
+                  color={component.color}
                 />
-              ))
-            ) : (
-              <div className="flex items-center justify-center h-48 text-gray-400 text-sm">
-                No items detected
-              </div>
-            )}
-          </div>
-
-          {/* Add item form */}
-          <AddItemDropdown item={item} setItem={setItem} onSave={saveItems} />
+              ))}
+            </div>
+          ) : (
+            <div className='flex items-center justify-center h-48 text-gray-400 text-sm'>
+              No components in this team yet
+            </div>
+          )}
         </div>
       </main>
+
+      {showCreateTeam && (
+        <CreateTeamModal
+          onClose={() => setShowCreateTeam(false)}
+          onSubmit={createTeam}
+        />
+      )}
     </div>
   )
 }

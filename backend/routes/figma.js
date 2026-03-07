@@ -7,8 +7,9 @@ const FIGMA_BASE_URL = "https://api.figma.com/v1"
 
 const figmaFetch = (endpoint) =>
   fetch(`${FIGMA_BASE_URL}${endpoint}`, {
-    headers: { "X-Figma-Token": FIGMA_TOKEN },
+    headers: {"X-Figma-Token": FIGMA_TOKEN},
   }).then((res) => res.json())
+
 // GET /api/figma/components
 router.get("/components", async (req, res) => {
   try {
@@ -32,7 +33,7 @@ router.get("/components", async (req, res) => {
     res.json(result)
   } catch (err) {
     console.error("Figma API error:", err)
-    res.status(500).json({ error: "Failed to fetch Figma components" })
+    res.status(500).json({error: "Failed to fetch Figma components"})
   }
 })
 
