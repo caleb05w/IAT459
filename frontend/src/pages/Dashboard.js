@@ -23,12 +23,12 @@ export default function Dashboard() {
   const [refreshing, setRefreshing] = useState(false)
   const [showCreateTeam, setShowCreateTeam] = useState(false)
 
-  // ── Load components for active team ───────────────────────
+  // ── Sync + load components for active team ────────────────
   const loadComponents = async (teamId) => {
     try {
       const res = await fetch(
-        `http://localhost:${PORT}/api/teams/${teamId}/components`,
-        {headers: {Authorization: `Bearer ${token}`}},
+        `http://localhost:${PORT}/api/teams/${teamId}/sync`,
+        {method: "POST", headers: {Authorization: `Bearer ${token}`}},
       )
       const data = await res.json()
       if (res.ok) {
@@ -37,10 +37,10 @@ export default function Dashboard() {
         logout()
         navigate("/login")
       } else {
-        console.warn("Failed to fetch components:", data.error)
+        console.warn("Failed to sync components:", data.error)
       }
     } catch (e) {
-      console.warn("issue fetching components", e)
+      console.warn("issue syncing components", e)
     }
   }
 
@@ -71,11 +71,15 @@ export default function Dashboard() {
 
   // ── Refresh ───────────────────────────────────────────────
   const handleRefresh = () => {
+    // spin the refresh icon while fetching
     setRefreshing(true)
+
     const fetches = [
+      //re-fetch the team list so sidebar stays up to date
       fetch(`http://localhost:${PORT}/api/teams`, {
         headers: {Authorization: `Bearer ${token}`},
       }).then((r) => {
+        // expired token — kick the user back to login
         if (r.status === 401) {
           logout()
           navigate("/login")
@@ -83,12 +87,13 @@ export default function Dashboard() {
         }
         return r.json().then((data) => setTeams(data))
       }),
+
+      // re-sync Figma components for the active team (if one is selected)
       activeTeam
-        ? fetch(
-            `http://localhost:${PORT}/api/teams/${activeTeam._id}/components`,
-            {headers: {Authorization: `Bearer ${token}`}},
-          ).then((r) => {
-            // If token expires logout
+        ? fetch(`http://localhost:${PORT}/api/teams/${activeTeam._id}/sync`, {
+            method: "POST",
+            headers: {Authorization: `Bearer ${token}`},
+          }).then((r) => {
             if (r.status === 401) {
               logout()
               navigate("/login")
@@ -96,8 +101,10 @@ export default function Dashboard() {
             }
             return r.json().then((data) => setComponents(data))
           })
-        : Promise.resolve(),
+        : Promise.resolve(), // no active team -> no sync
     ]
+
+    // stop the spinner once both fetches settle
     Promise.all(fetches).finally(() => setRefreshing(false))
   }
 
@@ -199,13 +206,14 @@ export default function Dashboard() {
               Select or create a team to get started
             </div>
           ) : components.length > 0 ? (
-            <div>
+            <div className='flex flex-wrap gap-4'>
               {components.map((component, i) => (
                 <DashboardCard
                   key={i}
                   header={component.name}
                   body={component.description}
-                  color={component.color}
+                  thumbnail={component.thumbnail}
+                  last_updated={component.last_updated}
                 />
               ))}
             </div>

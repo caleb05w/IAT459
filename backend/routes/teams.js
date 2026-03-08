@@ -4,6 +4,8 @@ const Team = require("../models/Team")
 const Component = require("../models/Component")
 const verifyToken = require("../middleware/authMiddleware")
 
+const FIGMA_TOKEN = process.env.FIGMA_TOKEN
+
 // POST /api/teams — create a team
 router.post("/", verifyToken, async (req, res) => {
   try {
@@ -42,6 +44,54 @@ router.get("/:id", verifyToken, async (req, res) => {
     const team = await Team.findById(req.params.id).populate("components")
     if (!team) return res.status(404).json({message: "Team not found"})
     res.json(team)
+  } catch (err) {
+    res.status(500).json({message: err.message})
+  }
+})
+
+// POST /api/teams/:id/sync — fetch from Figma, upsert into DB, link to team
+router.post("/:id/sync", verifyToken, async (req, res) => {
+  try {
+    const team = await Team.findById(req.params.id)
+    if (!team) return res.status(404).json({message: "Team not found"})
+
+    const isMember =
+      team.owner.equals(req.user.id) ||
+      team.contributors.some((c) => c.equals(req.user.id))
+    if (!isMember) return res.status(403).json({message: "Not a team member"})
+
+    const figmaRes = await fetch(
+      `https://api.figma.com/v1/teams/${team.figmaID}/components`,
+      {headers: {"X-Figma-Token": FIGMA_TOKEN}},
+    )
+    const figmaData = await figmaRes.json()
+    console.log("Figma sync response:", JSON.stringify(figmaData, null, 2))
+    const entries = figmaData.meta?.components ?? []
+
+    const componentIds = []
+    for (const entry of entries) {
+      const component = await Component.findOneAndUpdate(
+        {team: team._id, node_id: entry.node_id},
+        {
+          team: team._id,
+          node_id: entry.node_id,
+          name: entry.name,
+          description: entry.description ?? "",
+          last_updated: entry.updated_at,
+          user: entry.created_by?.handle ?? "Unknown",
+          thumbnail: entry.thumbnail_url ?? null,
+          link: `https://www.figma.com/design/${entry.file_key}?node-id=${entry.node_id}`,
+        },
+        {upsert: true, returnDocument: "after"},
+      )
+      componentIds.push(component._id)
+    }
+
+    team.components = componentIds
+    await team.save()
+
+    const components = await Component.find({team: team._id})
+    res.json(components)
   } catch (err) {
     res.status(500).json({message: err.message})
   }
