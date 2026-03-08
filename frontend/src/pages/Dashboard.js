@@ -48,6 +48,7 @@ export default function Dashboard() {
   const createTeam = async ({name, url}) => {
     try {
       const externalId = extractTeamId(url)
+      console.log(externalId)
       const res = await fetch(`http://localhost:${PORT}/api/teams`, {
         method: "POST",
         headers: {
@@ -87,6 +88,7 @@ export default function Dashboard() {
             `http://localhost:${PORT}/api/teams/${activeTeam._id}/components`,
             {headers: {Authorization: `Bearer ${token}`}},
           ).then((r) => {
+            // If token expires logout
             if (r.status === 401) {
               logout()
               navigate("/login")
