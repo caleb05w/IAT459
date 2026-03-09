@@ -5,7 +5,6 @@ const cors = require("cors")
 
 //instantiate routes
 const authRoutes = require("./routes/auth")
-const figmaRoutes = require("./routes/figma")
 const itemRoutes = require("./routes/items")
 const teamRoutes = require("./routes/teams")
 
@@ -43,7 +42,6 @@ connectDB()
 // routes
 app.use("/api/auth", authRoutes)
 app.use("/api/items", itemRoutes)
-app.use("/api/figma", figmaRoutes)
 app.use("/api/teams", teamRoutes)
 
 app.listen(PORT, () => {
