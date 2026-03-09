@@ -3,11 +3,14 @@ import {AuthContext} from "../context/AuthContext"
 import {useNavigate} from "react-router-dom"
 import {jwtDecode} from "jwt-decode"
 import {LuRefreshCw} from "react-icons/lu"
+
+// imported components
 import Button from "../components/Button"
 import DashboardCard from "../components/DashboardCard"
 import Sidebar from "../components/Sidebar"
 import CreateTeamModal from "../components/CreateTeamModal"
 import {extractTeamId} from "../utils/extractTeamId"
+import SearchBar from "../components/SearchBar"
 
 const PORT = 5001
 
@@ -22,6 +25,17 @@ export default function Dashboard() {
   const [components, setComponents] = useState([])
   const [refreshing, setRefreshing] = useState(false)
   const [showCreateTeam, setShowCreateTeam] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [filteredComponents, setFilteredComponents] = useState([])
+
+  // ── Search — filters live as the user types ───────────────
+  useEffect(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return setFilteredComponents(components)
+    setFilteredComponents(
+      components.filter((c) => c.name.toLowerCase().includes(q)),
+    )
+  }, [searchQuery, components])
 
   // ── Sync + load components for active team ────────────────
   const loadComponents = async (teamId) => {
@@ -156,6 +170,12 @@ export default function Dashboard() {
     if (activeTeam) loadComponents(activeTeam._id)
   }, [activeTeam])
 
+  // reset filtered list whenever components update
+  useEffect(() => {
+    setFilteredComponents(components)
+    setSearchQuery("")
+  }, [components])
+
   // ── Render ────────────────────────────────────────────────
   return (
     <div className='min-h-screen flex bg-[#f5f5f3]'>
@@ -201,13 +221,19 @@ export default function Dashboard() {
 
           <div className='border-b border-gray-200 mb-6' />
 
+          {activeTeam && (
+            <div className='mb-6'>
+              <SearchBar value={searchQuery} onChange={setSearchQuery} />
+            </div>
+          )}
+
           {!activeTeam ? (
             <div className='flex items-center justify-center h-48 text-gray-400 text-sm'>
               Select or create a team to get started
             </div>
-          ) : components.length > 0 ? (
+          ) : filteredComponents.length > 0 ? (
             <div className='flex flex-wrap gap-4'>
-              {components.map((component, i) => (
+              {filteredComponents.map((component, i) => (
                 <DashboardCard
                   key={i}
                   header={component.name}
