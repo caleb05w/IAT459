@@ -1,23 +1,22 @@
-import { useContext, useEffect, useState } from "react"
-import { AuthContext } from "../context/AuthContext"
-import { useNavigate } from "react-router-dom"
-import { jwtDecode } from "jwt-decode"
-import { LuRefreshCw, LuLayoutGrid, LuList, LuChevronDown } from "react-icons/lu"
+import {useContext, useEffect, useState} from "react"
+import {AuthContext} from "../context/AuthContext"
+import {useNavigate} from "react-router-dom"
+import {jwtDecode} from "jwt-decode"
+import {LuRefreshCw, LuLayoutGrid, LuList, LuChevronDown} from "react-icons/lu"
 
 // imported components
 import Button from "../components/Button"
 import DashboardCard from "../components/DashboardCard"
 import Sidebar from "../components/Sidebar"
 import CreateTeamModal from "../components/CreateTeamModal"
-import { extractTeamId } from "../utils/extractTeamId"
+import {extractTeamId} from "../utils/extractTeamId"
 import SearchBar from "../components/SearchBar"
 import DashboardList from "../components/DashboardList"
 
 const PORT = 5001
 
-
 export default function Dashboard() {
-  const { token, logout } = useContext(AuthContext)
+  const {token, logout} = useContext(AuthContext)
   const navigate = useNavigate()
 
   const [username, setUsername] = useState("")
@@ -30,13 +29,13 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("")
   const [filteredComponents, setFilteredComponents] = useState([])
 
-  //default view grid
+  // default view grid
   const [viewMode, setViewMode] = useState("grid")
   //search dropdown
   const [sortBy, setSortBy] = useState("Latest")
   const [sortOpen, setSortOpen] = useState(false)
 
-  // ── Search — filters live as the user types ───────────────
+  // ------------------- Search — filters live as the user types -------------------
   useEffect(() => {
     const q = searchQuery.trim().toLowerCase()
     if (!q) return setFilteredComponents(components)
@@ -45,12 +44,12 @@ export default function Dashboard() {
     )
   }, [searchQuery, components])
 
-  // ── Sync + load components for active team ────────────────
+  // ------------------- Sync + load components for active team -------------------
   const loadComponents = async (teamId) => {
     try {
       const res = await fetch(
         `http://localhost:${PORT}/api/teams/${teamId}/sync`,
-        { method: "POST", headers: { Authorization: `Bearer ${token}` } },
+        {method: "POST", headers: {Authorization: `Bearer ${token}`}},
       )
       const data = await res.json()
       if (res.ok) {
@@ -66,8 +65,8 @@ export default function Dashboard() {
     }
   }
 
-  // ── Create team ───────────────────────────────────────────
-  const createTeam = async ({ name, url }) => {
+  // ------------------- Create team -------------------
+  const createTeam = async ({name, url}) => {
     try {
       const externalId = extractTeamId(url)
       console.log(externalId)
@@ -77,7 +76,7 @@ export default function Dashboard() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ name, externalId }),
+        body: JSON.stringify({name, externalId}),
       })
       const data = await res.json()
       if (res.ok) {
@@ -91,13 +90,14 @@ export default function Dashboard() {
     }
   }
 
-  // ── Refresh ───────────────────────────────────────────────
+  // ------------------- Refresh -------------------
+  // (requires user to be a member)
   const handleRefresh = () => {
     setRefreshing(true)
 
     const fetches = [
       fetch(`http://localhost:${PORT}/api/teams`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {Authorization: `Bearer ${token}`},
       }).then((r) => {
         if (r.status === 401) {
           logout()
@@ -109,36 +109,36 @@ export default function Dashboard() {
 
       activeTeam
         ? fetch(`http://localhost:${PORT}/api/teams/${activeTeam._id}/sync`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        }).then((r) => {
-          if (r.status === 401) {
-            logout()
-            navigate("/login")
-            return
-          }
-          return r.json().then((data) => setComponents(data))
-        })
+            method: "POST",
+            headers: {Authorization: `Bearer ${token}`},
+          }).then((r) => {
+            if (r.status === 401) {
+              logout()
+              navigate("/login")
+              return
+            }
+            return r.json().then((data) => setComponents(data))
+          })
         : Promise.resolve(),
     ]
 
     Promise.all(fetches).finally(() => setRefreshing(false))
   }
 
-  // ── Logout ────────────────────────────────────────────────
+  // ------------------- Logout -------------------
   const handleLogout = () => {
     logout()
     navigate("/login")
   }
 
-  // ── Effects ───────────────────────────────────────────────
+  // ------------------- Effects -------------------
   useEffect(() => {
     if (!token) return
 
     const loadTeams = async () => {
       try {
         const res = await fetch(`http://localhost:${PORT}/api/teams`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {Authorization: `Bearer ${token}`},
         })
         const data = await res.json()
         if (res.ok) {
@@ -174,7 +174,6 @@ export default function Dashboard() {
     setSearchQuery("")
   }, [components])
 
-  // ── Render ────────────────────────────────────────────────
   return (
     <div className='min-h-screen flex bg-white'>
       <Sidebar
@@ -231,10 +230,11 @@ export default function Dashboard() {
                             setSortBy(option)
                             setSortOpen(false)
                           }}
-                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${sortBy === option
-                            ? "bg-gray-100 text-gray-900 font-medium"
-                            : "text-gray-600 hover:bg-gray-50"
-                            }`}>
+                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                            sortBy === option
+                              ? "bg-gray-100 text-gray-900 font-medium"
+                              : "text-gray-600 hover:bg-gray-50"
+                          }`}>
                           {option}
                         </button>
                       ))}
@@ -254,19 +254,21 @@ export default function Dashboard() {
                 <div className='flex items-center gap-1'>
                   <button
                     onClick={() => setViewMode("grid")}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border transition-colors ${viewMode === "grid"
-                      ? "bg-gray-100 border-gray-300 text-gray-800 font-medium"
-                      : "border-gray-200 text-gray-400 hover:bg-gray-50"
-                      }`}>
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border transition-colors ${
+                      viewMode === "grid"
+                        ? "bg-gray-100 border-gray-300 text-gray-800 font-medium"
+                        : "border-gray-200 text-gray-400 hover:bg-gray-50"
+                    }`}>
                     <LuLayoutGrid className='w-3.5 h-3.5' />
                     Grid
                   </button>
                   <button
                     onClick={() => setViewMode("list")}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border transition-colors ${viewMode === "list"
-                      ? "bg-gray-100 border-gray-300 text-gray-800 font-medium"
-                      : "border-gray-200 text-gray-400 hover:bg-gray-50"
-                      }`}>
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border transition-colors ${
+                      viewMode === "list"
+                        ? "bg-gray-100 border-gray-300 text-gray-800 font-medium"
+                        : "border-gray-200 text-gray-400 hover:bg-gray-50"
+                    }`}>
                     <LuList className='w-3.5 h-3.5' />
                     List
                   </button>
@@ -320,7 +322,7 @@ export default function Dashboard() {
                   thumbnail={component.thumbnail}
                   user={component.user}
                   last_updated={component.last_updated}
-                  link={component.link}
+                  link={""}
                 />
               ))}
             </div>

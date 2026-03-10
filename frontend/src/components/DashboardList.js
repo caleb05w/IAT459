@@ -3,14 +3,21 @@ function formatDateTime(dateStr) {
   const d = new Date(dateStr)
   const date = d.toLocaleDateString("en-US")
   const time = d
-    .toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+    .toLocaleTimeString("en-US", {hour: "numeric", minute: "2-digit"})
     .toLowerCase()
   return `${date} ${time}`
 }
 
-export default function DashboardList({ name, thumbnail, user, last_updated, link }) {
+export default function DashboardList({
+  name,
+  thumbnail,
+  user,
+  last_updated,
+  link,
+}) {
   return (
     <a
+      href={link}
       target='_blank'
       rel='noreferrer'
       className='grid grid-cols-[180px_1fr_220px] items-center py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors rounded-sm -mx-2 px-2'>
@@ -35,7 +42,9 @@ export default function DashboardList({ name, thumbnail, user, last_updated, lin
         <div className='w-7 h-7 rounded-full bg-amber-600 flex items-center justify-center text-white text-xs font-bold shrink-0'>
           {user ? user[0].toUpperCase() : "?"}
         </div>
-        <span className='text-sm text-gray-500'>{formatDateTime(last_updated)}</span>
+        <span className='text-sm text-gray-500'>
+          {formatDateTime(last_updated)}
+        </span>
       </div>
     </a>
   )

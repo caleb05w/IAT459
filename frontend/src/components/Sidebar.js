@@ -8,6 +8,7 @@ import {
   LuSearch,
 } from "react-icons/lu"
 
+// temp
 const NAV_ITEMS = [
   {label: "Recents", icon: LuClock},
   {label: "Bookmarked", icon: LuBookmark},
@@ -19,8 +20,8 @@ export default function Sidebar({
   setActiveNav,
   activeTeam,
   setActiveTeam,
-  teams = [], // ← real teams from Dashboard
-  username, // ← real username from Dashboard
+  teams = [], // user's teams
+  username,
   setShowCreateTeam,
 }) {
   const [teamOpen, setTeamOpen] = useState(false)
