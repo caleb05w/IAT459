@@ -4,6 +4,8 @@ import {Route, BrowserRouter as Router, Routes} from "react-router-dom"
 import Login from "./pages/Login"
 import Register from "./pages/Register"
 import Dashboard from "./pages/Dashboard"
+import Details from "./pages/Details"
+import Marketplace from "./pages/Marketplace"
 import {Agentation} from "agentation"
 import ProtectedRoute from "./ProtectedRoute"
 
@@ -33,6 +35,15 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path='/details'
+            element={
+              <ProtectedRoute>
+                <Details />
+              </ProtectedRoute>
+            }
+          />
+          <Route path='/marketplace' element={<Marketplace />} />
         </Routes>
       </Router>
       {process.env.NODE_ENV === "development" && <Agentation />}

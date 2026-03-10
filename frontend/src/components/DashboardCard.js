@@ -1,6 +1,8 @@
-export default function DashboardCard({header, body, thumbnail, last_updated}) {
+export default function DashboardCard({header, body, thumbnail, last_updated, onClick}) {
   return (
-    <div className='flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow w-[220px]'>
+    <div
+      onClick={onClick}
+      className={`flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow w-[220px]${onClick ? " cursor-pointer" : ""}`}>
       <div className='flex items-center justify-center bg-gray-100 h-[160px] border-b border-gray-200 p-4'>
         {thumbnail ? (
           <img

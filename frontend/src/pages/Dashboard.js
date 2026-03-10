@@ -296,6 +296,7 @@ export default function Dashboard() {
                   thumbnail={component.thumbnail}
                   last_updated={component.last_updated}
                   link={component.link}
+                  onClick={() => navigate("/details", {state: {component, teams, activeTeam, username}})}
                 />
               ))}
             </div>
@@ -323,6 +324,7 @@ export default function Dashboard() {
                   user={component.user}
                   last_updated={component.last_updated}
                   link={""}
+                  onClick={() => navigate("/details", {state: {component, teams, activeTeam, username}})}
                 />
               ))}
             </div>
