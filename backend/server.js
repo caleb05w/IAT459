@@ -5,13 +5,12 @@ const cors = require("cors")
 
 //instantiate routes
 const authRoutes = require("./routes/auth")
-const itemRoutes = require("./routes/items")
 const teamRoutes = require("./routes/teams")
 
 const app = express()
 const PORT = 5001
 
-app.use(cors({ origin: "http://localhost:3000" })) // allow requests from localhost:3000
+app.use(cors({origin: "http://localhost:3000"})) // allow requests from localhost:3000
 // app.use(cors()); // allow everyone
 app.use(express.json())
 
@@ -19,7 +18,7 @@ app.use(express.json())
 const uri = process.env.MONGO_URI
 
 const clientOptions = {
-  serverApi: { version: "1", strict: true, deprecationErrors: true },
+  serverApi: {version: "1", strict: true, deprecationErrors: true},
 }
 
 async function connectDB() {
@@ -27,7 +26,7 @@ async function connectDB() {
     await mongoose.connect(uri, clientOptions)
 
     // optional: the "Ping" command just confirms everything is working
-    await mongoose.connection.db.admin().command({ ping: 1 })
+    await mongoose.connection.db.admin().command({ping: 1})
     console.log("✅ Pinged the db. You successfully connected to MongoDB!")
   } catch (err) {
     console.error("❌ Connection failed:", err)
@@ -41,7 +40,6 @@ connectDB()
 
 // routes
 app.use("/api/auth", authRoutes)
-app.use("/api/items", itemRoutes)
 app.use("/api/teams", teamRoutes)
 
 app.listen(PORT, () => {
