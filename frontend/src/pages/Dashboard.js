@@ -1,10 +1,9 @@
 import {useContext, useEffect, useState} from "react"
 import {AuthContext} from "../context/AuthContext"
+import {DataContext} from "../context/DataContext"
 import {useNavigate} from "react-router-dom"
-import {jwtDecode} from "jwt-decode"
 import {LuRefreshCw, LuLayoutGrid, LuList, LuChevronDown} from "react-icons/lu"
 
-// imported components
 import Button from "../components/Button"
 import DashboardCard from "../components/DashboardCard"
 import Sidebar from "../components/Sidebar"
@@ -13,29 +12,29 @@ import {extractTeamId} from "../utils/extractTeamId"
 import SearchBar from "../components/SearchBar"
 import DashboardList from "../components/DashboardList"
 
-const PORT = 5001
-
 export default function Dashboard() {
-  const {token, logout} = useContext(AuthContext)
+  const {logout, user} = useContext(AuthContext)
+  const {teams, activeTeam, setActiveTeam, components, refresh, createTeam} =
+    useContext(DataContext)
   const navigate = useNavigate()
 
-  const [username, setUsername] = useState("")
-  const [teams, setTeams] = useState([])
   const [activeNav, setActiveNav] = useState("Recents")
-  const [activeTeam, setActiveTeam] = useState(null)
-  const [components, setComponents] = useState([])
   const [refreshing, setRefreshing] = useState(false)
   const [showCreateTeam, setShowCreateTeam] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [filteredComponents, setFilteredComponents] = useState([])
-
-  // default view grid
-  const [viewMode, setViewMode] = useState("grid")
-  //search dropdown
+  const [viewMode, setViewMode] = useState(
+    () => localStorage.getItem("viewMode") || "grid",
+  )
   const [sortBy, setSortBy] = useState("Latest")
   const [sortOpen, setSortOpen] = useState(false)
 
-  // ------------------- Search — filters live as the user types -------------------
+  const updateViewMode = (mode) => {
+    localStorage.setItem("viewMode", mode)
+    setViewMode(mode)
+  }
+
+  // ------------------- Search - filters live as the user types -------------------
   useEffect(() => {
     const q = searchQuery.trim().toLowerCase()
     if (!q) return setFilteredComponents(components)
@@ -44,135 +43,29 @@ export default function Dashboard() {
     )
   }, [searchQuery, components])
 
-  // ------------------- Sync + load components for active team -------------------
-  const loadComponents = async (teamId) => {
-    try {
-      const res = await fetch(
-        `http://localhost:${PORT}/api/teams/${teamId}/sync`,
-        {method: "POST", headers: {Authorization: `Bearer ${token}`}},
-      )
-      const data = await res.json()
-      if (res.ok) {
-        setComponents(data)
-      } else if (res.status === 401) {
-        logout()
-        navigate("/login")
-      } else {
-        console.warn("Failed to sync components:", data.error)
-      }
-    } catch (e) {
-      console.warn("issue syncing components", e)
-    }
+  useEffect(() => {
+    setFilteredComponents(components)
+    setSearchQuery("")
+  }, [components])
+
+  // ------------------- Handlers -------------------
+  const handleCreateTeam = async ({name, url}) => {
+    const externalId = extractTeamId(url)
+    await createTeam({name, externalId})
   }
 
-  // ------------------- Create team -------------------
-  const createTeam = async ({name, url}) => {
-    try {
-      const externalId = extractTeamId(url)
-      console.log(externalId)
-      const res = await fetch(`http://localhost:${PORT}/api/teams`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({name, externalId}),
-      })
-      const data = await res.json()
-      if (res.ok) {
-        setTeams((prev) => [...prev, data])
-        setActiveTeam(data)
-      } else {
-        console.warn("Failed to create team:", data.message)
-      }
-    } catch (e) {
-      console.warn("Error creating team:", e)
-    }
-  }
-
-  // ------------------- Refresh -------------------
-  // (requires user to be a member)
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setRefreshing(true)
-
-    const fetches = [
-      fetch(`http://localhost:${PORT}/api/teams`, {
-        headers: {Authorization: `Bearer ${token}`},
-      }).then((r) => {
-        if (r.status === 401) {
-          logout()
-          navigate("/login")
-          return
-        }
-        return r.json().then((data) => setTeams(data))
-      }),
-
-      activeTeam
-        ? fetch(`http://localhost:${PORT}/api/teams/${activeTeam._id}/sync`, {
-            method: "POST",
-            headers: {Authorization: `Bearer ${token}`},
-          }).then((r) => {
-            if (r.status === 401) {
-              logout()
-              navigate("/login")
-              return
-            }
-            return r.json().then((data) => setComponents(data))
-          })
-        : Promise.resolve(),
-    ]
-
-    Promise.all(fetches).finally(() => setRefreshing(false))
+    await refresh()
+    setRefreshing(false)
   }
 
-  // ------------------- Logout -------------------
   const handleLogout = () => {
     logout()
     navigate("/login")
   }
 
-  // ------------------- Effects -------------------
-  useEffect(() => {
-    if (!token) return
-
-    const loadTeams = async () => {
-      try {
-        const res = await fetch(`http://localhost:${PORT}/api/teams`, {
-          headers: {Authorization: `Bearer ${token}`},
-        })
-        const data = await res.json()
-        if (res.ok) {
-          setTeams(data)
-          setActiveTeam((prev) => prev ?? data[0] ?? null)
-        } else if (res.status === 401) {
-          logout()
-          navigate("/login")
-        } else {
-          console.warn("Failed to fetch teams:", data.error)
-        }
-      } catch (e) {
-        console.warn("issue fetching teams", e)
-      }
-    }
-
-    loadTeams()
-  }, [token, logout, navigate])
-
-  useEffect(() => {
-    if (token) {
-      const user = jwtDecode(token)
-      setUsername(user.username)
-    }
-  }, [token])
-
-  useEffect(() => {
-    if (activeTeam) loadComponents(activeTeam._id)
-  }, [activeTeam])
-
-  useEffect(() => {
-    setFilteredComponents(components)
-    setSearchQuery("")
-  }, [components])
+  const username = user?.username || ""
 
   return (
     <div className='min-h-screen flex bg-white'>
@@ -253,7 +146,7 @@ export default function Dashboard() {
                 </span>
                 <div className='flex items-center gap-1'>
                   <button
-                    onClick={() => setViewMode("grid")}
+                    onClick={() => updateViewMode("grid")}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border transition-colors ${
                       viewMode === "grid"
                         ? "bg-gray-100 border-gray-300 text-gray-800 font-medium"
@@ -263,7 +156,7 @@ export default function Dashboard() {
                     Grid
                   </button>
                   <button
-                    onClick={() => setViewMode("list")}
+                    onClick={() => updateViewMode("list")}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border transition-colors ${
                       viewMode === "list"
                         ? "bg-gray-100 border-gray-300 text-gray-800 font-medium"
@@ -296,7 +189,7 @@ export default function Dashboard() {
                   thumbnail={component.thumbnail}
                   last_updated={component.last_updated}
                   link={component.link}
-                  onClick={() => navigate("/details", {state: {component, teams, activeTeam, username}})}
+                  onClick={() => navigate("/details", {state: {component}})}
                 />
               ))}
             </div>
@@ -324,7 +217,7 @@ export default function Dashboard() {
                   user={component.user}
                   last_updated={component.last_updated}
                   link={""}
-                  onClick={() => navigate("/details", {state: {component, teams, activeTeam, username}})}
+                  onClick={() => navigate("/details", {state: {component}})}
                 />
               ))}
             </div>
@@ -335,7 +228,7 @@ export default function Dashboard() {
       {showCreateTeam && (
         <CreateTeamModal
           onClose={() => setShowCreateTeam(false)}
-          onSubmit={createTeam}
+          onSubmit={handleCreateTeam}
         />
       )}
     </div>

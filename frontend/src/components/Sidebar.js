@@ -43,9 +43,6 @@ export default function Sidebar({
         <div className='flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2'>
           <LuSearch className='w-3.5 h-3.5 text-gray-400 shrink-0' />
           <span className='text-gray-400 text-sm flex-1'>Search</span>
-          <kbd className='text-gray-400 text-xs border border-gray-200 rounded px-1 py-0.5 font-mono'>
-            ⌘K
-          </kbd>
         </div>
       </div>
 

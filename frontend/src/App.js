@@ -11,6 +11,7 @@ import ProtectedRoute from "./ProtectedRoute"
 
 //need to make auth provider globally available!
 import {AuthProvider} from "./context/AuthContext"
+import {DataProvider} from "./context/DataContext"
 
 //TODO
 //Dashboard View
@@ -23,6 +24,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <DataProvider>
         <Routes>
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
@@ -45,6 +47,7 @@ function App() {
           />
           <Route path='/marketplace' element={<Marketplace />} />
         </Routes>
+        </DataProvider>
       </Router>
       {process.env.NODE_ENV === "development" && <Agentation />}
     </AuthProvider>
