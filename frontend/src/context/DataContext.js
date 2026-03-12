@@ -133,6 +133,28 @@ export function DataProvider({children}) {
     }
   }
 
+  const deleteTeam = async (teamId) => {
+    try {
+      const res = await fetch(`http://localhost:${PORT}/api/teams/${teamId}`, {
+        method: "DELETE",
+        headers: {Authorization: `Bearer ${token}`},
+      })
+      if (res.ok) {
+        const remaining = teams.filter((t) => t._id !== teamId)
+        setTeams(remaining)
+        setActiveTeam(remaining[0] ?? null)
+        delete componentsCache.current[teamId]
+        return true
+      } else {
+        console.warn("Failed to delete team")
+        return false
+      }
+    } catch (e) {
+      console.warn("Error deleting team:", e)
+      return false
+    }
+  }
+
   const renameTeam = async (teamId, name) => {
     try {
       const res = await fetch(`http://localhost:${PORT}/api/teams/${teamId}`, {
@@ -173,6 +195,7 @@ export function DataProvider({children}) {
         components,
         refresh,
         createTeam,
+        deleteTeam,
         renameTeam,
         currentUserRole,
       }}>

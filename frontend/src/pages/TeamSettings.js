@@ -16,11 +16,19 @@ const ROLES = ["Admin", "Collaborator"]
 // Team settings page with two tabs: Settings (team config) and Members (member management)
 export default function TeamSettings() {
   const {token} = useContext(AuthContext)
-  const {teams, activeTeam, setActiveTeam, renameTeam, currentUserRole, createTeam} =
-    useContext(DataContext)
+  const {
+    teams,
+    activeTeam,
+    setActiveTeam,
+    renameTeam,
+    createTeam,
+    deleteTeam,
+    currentUserRole,
+  } = useContext(DataContext)
   const username = useContext(AuthContext).user?.username || ""
   const navigate = useNavigate()
 
+  // --- Create Team modal state ---
   const [showCreateTeam, setShowCreateTeam] = useState(false)
 
   const handleCreateTeam = async ({name, url}) => {
@@ -180,19 +188,9 @@ export default function TeamSettings() {
   // Permanently delete the team after confirmation — only available to the owner
   const handleDeleteTeam = async () => {
     if (!window.confirm("Are you sure? This cannot be undone.")) return
-    try {
-      const res = await fetch(
-        `http://localhost:${PORT}/api/teams/${activeTeam._id}`,
-        {
-          method: "DELETE",
-          headers: {Authorization: `Bearer ${token}`},
-        },
-      )
-      if (res.ok) navigate("/")
-      else console.warn("Failed to delete team")
-    } catch (e) {
-      console.warn("Error deleting team", e)
-    }
+    const ok = await deleteTeam(activeTeam._id)
+    console.log(activeTeam._id)
+    if (ok) navigate("/")
   }
 
   const TABS = ["Settings", "Members"]
@@ -342,7 +340,7 @@ export default function TeamSettings() {
                   <button
                     onClick={handleDeleteTeam}
                     className='px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-600 transition-colors'>
-                    Delete Project
+                    Delete Team
                   </button>
                 </div>
               </>
@@ -463,6 +461,7 @@ export default function TeamSettings() {
         )}
       </main>
 
+      {/* Create Team Modal */}
       {showCreateTeam && (
         <CreateTeamModal
           onClose={() => setShowCreateTeam(false)}
