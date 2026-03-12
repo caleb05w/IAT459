@@ -6,6 +6,8 @@ import {DataContext} from "../context/DataContext"
 import Sidebar from "../components/Sidebar"
 import Topbar from "../components/Topbar"
 import SearchBar from "../components/SearchBar"
+import CreateTeamModal from "../components/CreateTeamModal"
+import {extractTeamId} from "../utils/extractTeamId"
 
 const PORT = 5001
 // Roles available when adding or reassigning a member (Owner is excluded — only transferable, not directly assignable)
@@ -14,10 +16,17 @@ const ROLES = ["Admin", "Collaborator"]
 // Team settings page with two tabs: Settings (team config) and Members (member management)
 export default function TeamSettings() {
   const {token} = useContext(AuthContext)
-  const {teams, activeTeam, setActiveTeam, renameTeam, currentUserRole} =
+  const {teams, activeTeam, setActiveTeam, renameTeam, currentUserRole, createTeam} =
     useContext(DataContext)
   const username = useContext(AuthContext).user?.username || ""
   const navigate = useNavigate()
+
+  const [showCreateTeam, setShowCreateTeam] = useState(false)
+
+  const handleCreateTeam = async ({name, url}) => {
+    const externalId = extractTeamId(url)
+    await createTeam({name, externalId})
+  }
 
   // --- Settings tab state ---
   const [activeTab, setActiveTab] = useState("Settings")
@@ -202,6 +211,7 @@ export default function TeamSettings() {
         setActiveTeam={setActiveTeam}
         teams={teams}
         username={username}
+        setShowCreateTeam={setShowCreateTeam}
       />
 
       <main className='flex-1 flex flex-col min-w-0'>
@@ -452,6 +462,13 @@ export default function TeamSettings() {
           </div>
         )}
       </main>
+
+      {showCreateTeam && (
+        <CreateTeamModal
+          onClose={() => setShowCreateTeam(false)}
+          onSubmit={handleCreateTeam}
+        />
+      )}
 
       {/* Add Member Modal */}
       {showAddMember && (
