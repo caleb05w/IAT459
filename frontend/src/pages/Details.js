@@ -4,6 +4,7 @@ import {LuArrowLeft, LuChevronDown} from "react-icons/lu"
 import {AuthContext} from "../context/AuthContext"
 import {DataContext} from "../context/DataContext"
 import Sidebar from "../components/Sidebar"
+import Topbar from "../components/Topbar"
 import CreateTeamModal from "../components/CreateTeamModal"
 
 const PORT = 5001
@@ -85,21 +86,14 @@ export default function Details() {
       />
 
       <main className='flex-1 flex flex-col min-w-0'>
-        {/* Topbar */}
-        <div className='flex items-center justify-between px-8 py-3 border-b border-gray-100 bg-white'>
-          <span className='text-sm text-gray-400'>
-            Figma / Components /{" "}
-            <span className='text-gray-900 font-semibold'>
-              {component.name}
-            </span>
-          </span>
+        <Topbar breadcrumbs={["Figma", "Components", component.name]}>
           <button
             onClick={() => navigate(-1)}
             className='flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-colors'>
             <LuArrowLeft className='w-3.5 h-3.5' />
             Back
           </button>
-        </div>
+        </Topbar>
 
         {/* Content */}
         <div className='flex-1 px-8 pt-8 pb-10 flex flex-col gap-8'>

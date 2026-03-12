@@ -11,6 +11,7 @@ import CreateTeamModal from "../components/CreateTeamModal"
 import {extractTeamId} from "../utils/extractTeamId"
 import SearchBar from "../components/SearchBar"
 import DashboardList from "../components/DashboardList"
+import Topbar from "../components/Topbar"
 
 export default function Dashboard() {
   const {logout, user} = useContext(AuthContext)
@@ -80,24 +81,17 @@ export default function Dashboard() {
       />
 
       <main className='flex-1 flex flex-col min-w-0'>
-        {/* Topbar */}
-        <div className='flex items-center justify-between px-8 py-3 border-b border-gray-100 bg-white'>
-          <span className='text-sm text-gray-400'>
-            Figma /{" "}
-            <span className='text-gray-900 font-semibold'>Components</span>
-          </span>
-          <div className='flex items-center gap-3'>
-            <button
-              onClick={handleRefresh}
-              className='flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-colors'>
-              <LuRefreshCw
-                className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`}
-              />
-              Refresh
-            </button>
-            <Button body='Logout' onClick={handleLogout} />
-          </div>
-        </div>
+        <Topbar breadcrumbs={[activeTeam?.name, "Overview"]}>
+          <button
+            onClick={handleRefresh}
+            className='flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-colors'>
+            <LuRefreshCw
+              className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </button>
+          <Button body='Logout' onClick={handleLogout} />
+        </Topbar>
 
         {/* Content */}
         <div className='flex-1 px-8 pt-6 pb-8'>

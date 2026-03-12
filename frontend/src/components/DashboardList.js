@@ -21,7 +21,14 @@ export default function DashboardList({
       href={link}
       target='_blank'
       rel='noreferrer'
-      onClick={onClick ? (e) => { e.preventDefault(); onClick() } : undefined}
+      onClick={
+        onClick
+          ? (e) => {
+              e.preventDefault()
+              onClick()
+            }
+          : undefined
+      }
       className={`grid grid-cols-[180px_1fr_220px] items-center py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors rounded-sm -mx-2 px-2${onClick ? " cursor-pointer" : ""}`}>
       {/* Thumbnail */}
       <div className='w-[120px] h-[72px] bg-gray-100 rounded-md overflow-hidden flex items-center justify-center border border-gray-200'>

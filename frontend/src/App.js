@@ -6,6 +6,7 @@ import Register from "./pages/Register"
 import Dashboard from "./pages/Dashboard"
 import Details from "./pages/Details"
 import Marketplace from "./pages/Marketplace"
+import TeamSettings from "./pages/TeamSettings"
 import {Agentation} from "agentation"
 import ProtectedRoute from "./ProtectedRoute"
 
@@ -46,6 +47,14 @@ function App() {
             }
           />
           <Route path='/marketplace' element={<Marketplace />} />
+          <Route
+            path='/settings'
+            element={
+              <ProtectedRoute>
+                <TeamSettings />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
         </DataProvider>
       </Router>

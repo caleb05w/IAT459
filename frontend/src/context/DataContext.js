@@ -1,4 +1,11 @@
-import {createContext, useContext, useEffect, useRef, useState} from "react"
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import {useNavigate} from "react-router-dom"
 import {AuthContext} from "./AuthContext"
 
@@ -6,8 +13,9 @@ export const DataContext = createContext()
 
 const PORT = 5001
 
+// Function: Keeps system from fetching data multiple times after refresh
 export function DataProvider({children}) {
-  const {token, logout} = useContext(AuthContext)
+  const {token, logout, user} = useContext(AuthContext)
   const navigate = useNavigate()
 
   const [teams, setTeams] = useState([])
@@ -23,7 +31,7 @@ export function DataProvider({children}) {
     loadTeams()
   }, [token])
 
-  // Load components when active team changes — use cache if available
+  // Load components when active team changes
   useEffect(() => {
     if (!activeTeam) return
     const cached = componentsCache.current[activeTeam._id]
@@ -52,6 +60,7 @@ export function DataProvider({children}) {
     }
   }
 
+  // Sync components: Figma --> Mongo --> Client
   const fetchComponents = async (teamId) => {
     try {
       const res = await fetch(
@@ -71,7 +80,7 @@ export function DataProvider({children}) {
     }
   }
 
-  // Re-fetches teams and components from the server, updating the cache
+  // Re-fetches teams and components from the server / update cache
   const refresh = async () => {
     try {
       const teamsRes = await fetch(`http://localhost:${PORT}/api/teams`, {
@@ -124,9 +133,49 @@ export function DataProvider({children}) {
     }
   }
 
+  const renameTeam = async (teamId, name) => {
+    try {
+      const res = await fetch(`http://localhost:${PORT}/api/teams/${teamId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({name}),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setTeams((prev) => prev.map((t) => (t._id === teamId ? data : t)))
+        setActiveTeam((prev) => (prev?._id === teamId ? data : prev))
+      } else {
+        console.warn("Failed to rename team:", data.message)
+      }
+    } catch (e) {
+      console.warn("Error renaming team:", e)
+    }
+  }
+
+  const currentUserRole = useMemo(() => {
+    if (!activeTeam || !user?.id) return null
+    if (activeTeam.owner === user.id || activeTeam.owner?._id === user.id)
+      return "Owner"
+    if (activeTeam.admins?.some((a) => a === user.id || a?._id === user.id))
+      return "Admin"
+    return "Collaborator"
+  }, [activeTeam, user?.id])
+
   return (
     <DataContext.Provider
-      value={{teams, activeTeam, setActiveTeam, components, refresh, createTeam}}>
+      value={{
+        teams,
+        activeTeam,
+        setActiveTeam,
+        components,
+        refresh,
+        createTeam,
+        renameTeam,
+        currentUserRole,
+      }}>
       {children}
     </DataContext.Provider>
   )
