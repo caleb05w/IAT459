@@ -96,18 +96,24 @@ export function DataProvider({children}) {
       }
 
       if (activeTeam) {
+        console.log("syncing team", activeTeam._id);
         const compRes = await fetch(
           `http://localhost:${PORT}/api/teams/${activeTeam._id}/sync`,
           {method: "POST", headers: {Authorization: `Bearer ${token}`}},
         )
+        console.log("sync status:", compRes.status, compRes.ok);
         if (compRes.ok) {
           const compData = await compRes.json()
           componentsCache.current[activeTeam._id] = compData
           setComponents(compData)
+        } else {
+          const errData = await compRes.json()
+          console.log("sync error data:", errData);
+          return errData.message || "Sync failed."
         }
       }
     } catch (e) {
-      console.warn("Error refreshing data", e)
+      return "Network error during refresh."
     }
   }
 
@@ -125,11 +131,12 @@ export function DataProvider({children}) {
       if (res.ok) {
         setTeams((prev) => [...prev, data])
         setActiveTeam(data)
+        return null
       } else {
-        console.warn("Failed to create team:", data.message)
+        return data.message || "Failed to create team."
       }
     } catch (e) {
-      console.warn("Error creating team:", e)
+      return "Network error. Please try again."
     }
   }
 

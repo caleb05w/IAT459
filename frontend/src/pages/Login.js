@@ -5,7 +5,7 @@ import Status from "../components/Status"
 import {useNavigate} from "react-router-dom"
 //need this for login function from AuthContext JS
 import {AuthContext} from "../context/AuthContext"
-import PublicSidebar from "../components/PublicSidebar"
+import PublicNavbar from "../components/PublicNavbar"
 
 export default function Login() {
   const {login} = useContext(AuthContext)
@@ -56,8 +56,8 @@ export default function Login() {
   }
 
   return (
-    <div className='min-h-screen flex bg-white'>
-      <PublicSidebar />
+    <div className='min-h-screen flex flex-col bg-white'>
+      <PublicNavbar />
       <div className='flex-1 flex items-center justify-center'>
       <div className='flex flex-col gap-[2rem] w-[448px]'>
           <Status

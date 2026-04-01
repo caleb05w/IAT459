@@ -1,11 +1,10 @@
 import {useContext, useState} from "react"
 import {useLocation, useNavigate} from "react-router-dom"
-import {LuArrowLeft, LuChevronDown} from "react-icons/lu"
+import {LuChevronDown} from "react-icons/lu"
 import {AuthContext} from "../context/AuthContext"
 import {DataContext} from "../context/DataContext"
 import Sidebar from "../components/Sidebar"
-import Topbar from "../components/Topbar"
-import CreateTeamModal from "../components/CreateTeamModal"
+import ProtectedNavbar from "../components/ProtectedNavbar"
 
 const PORT = 5001
 
@@ -28,8 +27,7 @@ export default function Details() {
   const {component} = state || {}
   const username = useContext(AuthContext).user?.username || ""
 
-  const [activeNav, setActiveNav] = useState("All Components")
-  const [showCreateTeam, setShowCreateTeam] = useState(false)
+  const [activeNav, setActiveNav] = useState("Components")
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [isPublic, setIsPublic] = useState(component?.public ?? false)
   const [visibilityOpen, setVisibilityOpen] = useState(false)
@@ -82,21 +80,17 @@ export default function Details() {
         setActiveTeam={setActiveTeam}
         teams={teams}
         username={username}
-        setShowCreateTeam={setShowCreateTeam}
       />
-
       <main className='flex-1 flex flex-col min-w-0'>
-        <Topbar breadcrumbs={["Figma", "Components", component.name]}>
-          <button
-            onClick={() => navigate(-1)}
-            className='flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-colors'>
-            <LuArrowLeft className='w-3.5 h-3.5' />
-            Back
-          </button>
-        </Topbar>
+        <ProtectedNavbar
+          breadcrumbs={[activeTeam?.name, "Components", component.name]}
+          onBreadcrumbClick={(i) => {
+            if (i === 0 || i === 1) navigate(`/team/${activeTeam._id}`);
+          }}
+        />
 
         {/* Content */}
-        <div className='flex-1 px-8 pt-8 pb-10 flex flex-col gap-8'>
+        <div className='flex-1 px-8 pt-8 pb-10 flex flex-col gap-8 bg-transparent'>
           {/* Preview */}
           <div
             className='w-full rounded-2xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center'
@@ -219,12 +213,6 @@ export default function Details() {
         </div>
       </main>
 
-      {showCreateTeam && (
-        <CreateTeamModal
-          onClose={() => setShowCreateTeam(false)}
-          onSubmit={() => setShowCreateTeam(false)}
-        />
-      )}
     </div>
   )
 }

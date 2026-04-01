@@ -9,6 +9,7 @@
     "@testing-library/user-event": "^13.5.0",
     "agentation": "^2.2.1",
     "autoprefixer": "^10.4.27",
+    "framer-motion": "^12.38.0",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.577.0",
     "postcss": "^8.5.6",

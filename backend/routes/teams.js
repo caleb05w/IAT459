@@ -11,6 +11,9 @@ router.post("/", verifyToken, async (req, res) => {
   try {
     const {name, externalId} = req.body
 
+    if (!name || !name.trim()) return res.status(400).json({message: "Team name is required."})
+    if (!externalId) return res.status(400).json({message: "Invalid Figma team URL. Expected format: figma.com/files/team/123456789/..."})
+
     const newTeam = new Team({
       name,
       owner: req.user.id,
@@ -207,7 +210,11 @@ router.post("/:id/sync", verifyToken, async (req, res) => {
       {headers: {"X-Figma-Token": FIGMA_TOKEN}},
     )
     const figmaData = await figmaRes.json()
-    // console.log("Figma sync response:", JSON.stringify(figmaData, null, 2));
+    console.log("Figma sync response:", JSON.stringify(figmaData, null, 2));
+
+    if (figmaData.error) {
+      return res.status(figmaData.status).json({message: figmaData.message})
+    }
 
     // components live under figmaData.meta.components (default to empty array if missing)
     const entries = figmaData.meta?.components ?? []
