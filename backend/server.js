@@ -6,6 +6,7 @@ const cors = require("cors")
 //instantiate routes
 const authRoutes = require("./routes/auth")
 const teamRoutes = require("./routes/teams")
+const userRoutes = require("./routes/users")
 
 const app = express()
 const PORT = 5001
@@ -41,6 +42,7 @@ connectDB()
 // routes
 app.use("/api/auth", authRoutes)
 app.use("/api/teams", teamRoutes)
+app.use("/api/users", userRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)

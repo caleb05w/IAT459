@@ -21,9 +21,54 @@ export function DataProvider({children}) {
   const [teams, setTeams] = useState([])
   const [activeTeam, setActiveTeam] = useState(null)
   const [components, setComponents] = useState([])
+  const [bookmarks, setBookmarks] = useState({})
 
   // Cache: teamId -> components[]
   const componentsCache = useRef({})
+
+  // Load bookmarks from server when token is available
+  useEffect(() => {
+    if (!token) return
+    fetchBookmarks()
+  }, [token])
+
+  const fetchBookmarks = async () => {
+    try {
+      const res = await fetch(`http://localhost:${PORT}/api/users/me/bookmarks`, {
+        headers: {Authorization: `Bearer ${token}`},
+      })
+      if (res.ok) {
+        const data = await res.json()
+        const dict = {}
+        data.forEach((c) => {dict[c._id] = c})
+        setBookmarks(dict)
+      } else if (res.status === 401) {
+        logout()
+        navigate("/login")
+      }
+    } catch (e) {
+      console.warn("Error fetching bookmarks", e)
+    }
+  }
+
+  const toggleBookmark = async (component) => {
+    try {
+      const res = await fetch(
+        `http://localhost:${PORT}/api/users/me/bookmarks/${component._id}`,
+        {method: "POST", headers: {Authorization: `Bearer ${token}`}},
+      )
+      if (res.ok) {
+        const data = await res.json()
+        const dict = {}
+        data.forEach((c) => {dict[c._id] = c})
+        setBookmarks(dict)
+      }
+    } catch (e) {
+      console.warn("Error toggling bookmark", e)
+    }
+  }
+
+  const isBookmarked = (componentId) => !!bookmarks[componentId]
 
   // Load teams once when token is available
   useEffect(() => {
@@ -205,6 +250,9 @@ export function DataProvider({children}) {
         deleteTeam,
         renameTeam,
         currentUserRole,
+        bookmarks,
+        toggleBookmark,
+        isBookmarked,
       }}>
       {children}
     </DataContext.Provider>

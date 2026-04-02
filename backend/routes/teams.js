@@ -156,6 +156,49 @@ router.patch("/:id/members/:userId/role", verifyToken, async (req, res) => {
   }
 })
 
+// DELETE /api/teams/:id/members/:userId — remove a member (or leave) and clean their bookmarks
+router.delete("/:id/members/:userId", verifyToken, async (req, res) => {
+  try {
+    const team = await Team.findById(req.params.id)
+    if (!team) return res.status(404).json({message: "Team not found"})
+
+    const isOwner = team.owner.equals(req.user.id)
+    const isAdmin = team.admins.some((a) => a.equals(req.user.id))
+    const isSelf = req.params.userId === req.user.id
+
+    // Owner/admin can remove others; any member can remove themselves
+    if (!isOwner && !isAdmin && !isSelf)
+      return res.status(403).json({message: "Insufficient permissions"})
+
+    // The team owner cannot be removed
+    if (team.owner.equals(req.params.userId))
+      return res.status(400).json({message: "Cannot remove the team owner"})
+
+    team.admins = team.admins.filter((a) => !a.equals(req.params.userId))
+    team.contributors = team.contributors.filter((c) => !c.equals(req.params.userId))
+    await team.save()
+
+    // Clean up: remove this team's components from the removed user's bookmarks
+    const User = require("../models/User")
+    const teamComponentIds = team.components.map((id) => id.toString())
+    const removedUser = await User.findById(req.params.userId)
+    if (removedUser) {
+      removedUser.bookmarked = removedUser.bookmarked.filter(
+        (id) => !teamComponentIds.includes(id.toString()),
+      )
+      await removedUser.save()
+    }
+
+    const populated = await Team.findById(team._id)
+      .populate("owner", "username fName lName")
+      .populate("admins", "username fName lName")
+      .populate("contributors", "username fName lName")
+    res.json(buildMembers(populated))
+  } catch (err) {
+    res.status(500).json({message: err.message})
+  }
+})
+
 // DELETE /api/teams/:id — permanently delete a team and its components
 router.delete("/:id", verifyToken, async (req, res) => {
   try {

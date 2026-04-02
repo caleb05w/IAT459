@@ -1,3 +1,5 @@
+import {LuBookmark} from "react-icons/lu"
+
 function formatDateTime(dateStr) {
   if (!dateStr) return "—";
   const d = new Date(dateStr);
@@ -15,6 +17,8 @@ export default function DashboardList({
   last_updated,
   link,
   onClick,
+  isBookmarked,
+  onBookmark,
 }) {
   return (
     <a
@@ -29,7 +33,7 @@ export default function DashboardList({
             }
           : undefined
       }
-      className={`grid grid-cols-[180px_1fr_220px] items-center py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors rounded-sm${onClick ? " cursor-pointer" : ""}`}
+      className={`grid grid-cols-[180px_1fr_220px_40px] items-center py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors rounded-sm${onClick ? " cursor-pointer" : ""}`}
     >
       {/* Thumbnail */}
       <div className="w-[160px] h-[72px] bg-gray-100 rounded-md overflow-hidden flex items-center justify-center border border-gray-200">
@@ -55,6 +59,18 @@ export default function DashboardList({
         <span className="text-sm text-gray-500">
           {formatDateTime(last_updated)}
         </span>
+      </div>
+
+      {/* Bookmark */}
+      <div className="flex items-center justify-center">
+        <button
+          onClick={(e) => {e.stopPropagation(); e.preventDefault(); onBookmark?.()}}
+          className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
+        >
+          {isBookmarked
+            ? <LuBookmark className="w-4 h-4 text-black" fill="currentColor" />
+            : <LuBookmark className="w-4 h-4" />}
+        </button>
       </div>
     </a>
   );

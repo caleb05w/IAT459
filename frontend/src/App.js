@@ -8,6 +8,7 @@ import Teams from "./pages/Teams";
 import Details from "./pages/Details";
 import Marketplace from "./pages/Marketplace";
 import TeamSettings from "./pages/TeamSettings";
+import Bookmarks from "./pages/Bookmarks";
 import { Agentation } from "agentation";
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -61,6 +62,14 @@ function App() {
               }
             />
             <Route path="/marketplace" element={<Marketplace />} />
+            <Route
+              path="/bookmarks"
+              element={
+                <ProtectedRoute>
+                  <Bookmarks />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/settings"
               element={

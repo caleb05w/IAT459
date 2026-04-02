@@ -22,6 +22,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  bookmarked: [{type: mongoose.Schema.Types.ObjectId, ref: "Component"}],
 })
 
 module.exports = mongoose.model("User", UserSchema)

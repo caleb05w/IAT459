@@ -1,9 +1,13 @@
+import {LuBookmark} from "react-icons/lu"
+
 export default function DashboardCard({
   header,
   body,
   thumbnail,
   last_updated,
   onClick,
+  isBookmarked,
+  onBookmark,
 }) {
   return (
     <div
@@ -11,7 +15,7 @@ export default function DashboardCard({
       className={`flex flex-col rounded-[0.5rem] overflow-hidden w-[16rem] hover:cursor-pointer`}
       style={{ boxShadow: "0 4px 24px 0 rgba(0,0,0,0.06)" }}
     >
-      <div className="flex h-[16rem] p-4">
+      <div className="relative flex h-[16rem] p-4">
         {thumbnail ? (
           <img
             src={thumbnail}
@@ -21,6 +25,14 @@ export default function DashboardCard({
         ) : (
           <div className="text-gray-300 text-sm">No preview</div>
         )}
+        <button
+          onClick={(e) => {e.stopPropagation(); onBookmark?.()}}
+          className="absolute top-3 right-3 p-1.5 rounded-md bg-white/80 hover:bg-white text-gray-400 hover:text-gray-700 transition-colors"
+        >
+          {isBookmarked
+            ? <LuBookmark className="w-4 h-4 text-black" fill="currentColor" />
+            : <LuBookmark className="w-4 h-4" />}
+        </button>
       </div>
       <div className="px-4 pt-3 pb-2">
         <h5 className="text-gray-900 truncate">{header}</h5>
