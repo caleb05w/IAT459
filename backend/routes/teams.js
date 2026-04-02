@@ -199,6 +199,59 @@ router.delete("/:id/members/:userId", verifyToken, async (req, res) => {
   }
 })
 
+// POST /api/teams/:id/leave — leave a team
+// If the owner leaves: transfer to oldest admin → oldest contributor → delete the team
+router.post("/:id/leave", verifyToken, async (req, res) => {
+  try {
+    const User = require("../models/User")
+    const team = await Team.findById(req.params.id)
+    if (!team) return res.status(404).json({message: "Team not found"})
+
+    const userId = req.user.id
+    const isOwner = team.owner.equals(userId)
+
+    if (isOwner) {
+      if (team.admins.length > 0) {
+        // Transfer to oldest admin (first in array)
+        const newOwner = team.admins[0]
+        team.admins.shift()
+        team.owner = newOwner
+        await team.save()
+      } else if (team.contributors.length > 0) {
+        // Transfer to oldest contributor
+        const newOwner = team.contributors[0]
+        team.contributors.shift()
+        team.owner = newOwner
+        await team.save()
+      } else {
+        // No other members — delete the team
+        await Component.deleteMany({team: team._id})
+        await team.deleteOne()
+        return res.json({deleted: true})
+      }
+    } else {
+      // Non-owner: just remove from admins or contributors
+      team.admins = team.admins.filter((a) => !a.equals(userId))
+      team.contributors = team.contributors.filter((c) => !c.equals(userId))
+      await team.save()
+    }
+
+    // Clean up: remove this team's components from the leaving user's bookmarks
+    const teamComponentIds = team.components.map((id) => id.toString())
+    const leavingUser = await User.findById(userId)
+    if (leavingUser) {
+      leavingUser.bookmarked = leavingUser.bookmarked.filter(
+        (id) => !teamComponentIds.includes(id.toString()),
+      )
+      await leavingUser.save()
+    }
+
+    res.json({deleted: false})
+  } catch (err) {
+    res.status(500).json({message: err.message})
+  }
+})
+
 // DELETE /api/teams/:id — permanently delete a team and its components
 router.delete("/:id", verifyToken, async (req, res) => {
   try {

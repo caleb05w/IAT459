@@ -172,7 +172,28 @@ export default function TeamSettings() {
     if (ok) navigate("/")
   }
 
-  const TABS = ["Settings", "Members"]
+  const handleLeaveTeam = async () => {
+    if (!window.confirm("Are you sure you want to leave this team?")) return
+    try {
+      const res = await fetch(
+        `http://localhost:${PORT}/api/teams/${activeTeam._id}/leave`,
+        {
+          method: "POST",
+          headers: {Authorization: `Bearer ${token}`},
+        },
+      )
+      if (res.ok) navigate("/teams")
+      else {
+        const data = await res.json()
+        console.warn("Failed to leave team:", data.message)
+      }
+    } catch (e) {
+      console.warn("Error leaving team", e)
+    }
+  }
+
+  const isCollaborator = currentUserRole === "Collaborator"
+  const TABS = isCollaborator ? ["Settings"] : ["Settings", "Members"]
   const assignableRoles = currentUserRole === "Owner" ? ROLES : ["Admin", "Collaborator"]
 
   return (
@@ -219,59 +240,70 @@ export default function TeamSettings() {
         {/* Settings Tab */}
         {activeTab === "Settings" && (
           <div className='flex-1 px-8 pt-8 pb-10 w-full flex flex-col'>
-            <p className='text-sm text-gray-400 mb-4'>Team</p>
-            <div className='flex flex-col gap-3 mb-8'>
-              <div className="flex flex-col gap-2">
-                <p className="text-sm font-medium text-gray-900">Team Name</p>
-                <TextInput
-                  value={teamName}
-                  onChange={(e) => setTeamName(e.target.value)}
-                  placeholder="Team name…"
-                />
-              </div>
-
-              <SettingsRow
-                title="Marketplace Visibility (WIP)"
-                description="All components are hidden from the Marketplace">
-                <Dropdown
-                  value={visibilityLoading ? "Saving…" : visibility}
-                  options={["Public", "Private"]}
-                  onChange={handleVisibilityChange}
-                />
-              </SettingsRow>
-
-              <SettingsRow
-                title="Revert Components to Private (WIP)"
-                description="All components will revert to being private"
-                buttonLabel="Revert Components"
-                buttonStyle="danger"
-                onAction={handleRevertToPrivate}
-              />
-            </div>
-
-            {currentUserRole === "Owner" && (
+            {!isCollaborator && (
               <>
-                <p className='text-sm text-gray-400 mb-4'>Danger Zone</p>
+                <p className='text-sm text-gray-400 mb-4'>Team</p>
                 <div className='flex flex-col gap-3 mb-8'>
+                  <div className="flex flex-col gap-2">
+                    <p className="text-sm font-medium text-gray-900">Team Name</p>
+                    <TextInput
+                      value={teamName}
+                      onChange={(e) => setTeamName(e.target.value)}
+                      placeholder="Team name…"
+                    />
+                  </div>
+
                   <SettingsRow
-                    title="Delete Team"
-                    description="Once you do this, you can't go back."
-                    buttonLabel="Delete Team"
+                    title="Marketplace Visibility (WIP)"
+                    description="All components are hidden from the Marketplace">
+                    <Dropdown
+                      value={visibilityLoading ? "Saving…" : visibility}
+                      options={["Public", "Private"]}
+                      onChange={handleVisibilityChange}
+                    />
+                  </SettingsRow>
+
+                  <SettingsRow
+                    title="Revert Components to Private (WIP)"
+                    description="All components will revert to being private"
+                    buttonLabel="Revert Components"
                     buttonStyle="danger"
-                    onAction={handleDeleteTeam}
+                    onAction={handleRevertToPrivate}
                   />
                 </div>
               </>
             )}
 
-            <div className='mt-auto pt-4'>
-              <Button
-                body={teamNameLoading ? "Saving…" : "Save"}
-                size="sm"
-                style="primary"
-                onClick={handleRenameTeam}
+            <p className='text-sm text-gray-400 mb-4'>Danger Zone</p>
+            <div className='flex flex-col gap-3 mb-8'>
+              <SettingsRow
+                title="Leave Team"
+                description="You will lose access to this team and its components."
+                buttonLabel="Leave Team"
+                buttonStyle="danger"
+                onAction={handleLeaveTeam}
               />
+              {currentUserRole === "Owner" && (
+                <SettingsRow
+                  title="Delete Team"
+                  description="Once you do this, you can't go back."
+                  buttonLabel="Delete Team"
+                  buttonStyle="danger"
+                  onAction={handleDeleteTeam}
+                />
+              )}
             </div>
+
+            {!isCollaborator && (
+              <div className='mt-auto pt-4'>
+                <Button
+                  body={teamNameLoading ? "Saving…" : "Save"}
+                  size="sm"
+                  style="primary"
+                  onClick={handleRenameTeam}
+                />
+              </div>
+            )}
           </div>
         )}
 
