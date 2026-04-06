@@ -6,7 +6,7 @@ import {LuHouse, LuLayoutGrid, LuBookmark, LuSettings} from "react-icons/lu"
 const NAV_ITEMS = [
   {label: "Overview", icon: LuHouse, path: "/"},
   {label: "Bookmarks", icon: LuBookmark, path: "/bookmarks"},
-  {label: "Components", icon: LuLayoutGrid, path: "/"},
+  {label: "Components", icon: LuLayoutGrid, path: "/:teamid"},
   {label: "Team Settings", icon: LuSettings, path: "/settings"},
 ]
 
@@ -29,6 +29,8 @@ export default function Sidebar({
     setActiveNav?.(label)
     if (label === "Overview") {
       navigate("/teams")
+    } else if (label === "Components" && activeTeam) {
+      navigate(`/team/${activeTeam._id}`)
     } else if (label === "Team Settings" && activeTeam) {
       navigate(`/team/${activeTeam._id}/settings`)
     } else if (path) {
