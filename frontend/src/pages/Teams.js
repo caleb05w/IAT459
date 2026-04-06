@@ -9,6 +9,7 @@ import Button from "../components/Button"
 import TeamCard from "../components/TeamCard"
 import TeamCardInput from "../components/TeamCardInput"
 import {extractTeamId} from "../utils/extractTeamId"
+import {toSlug} from "../utils/toSlug"
 import Status from "../components/Status"
 
 export default function Teams() {
@@ -47,7 +48,7 @@ export default function Teams() {
     setLoadingTeamId(team._id)
     setActiveTeam(team)
     await fetchComponents(team._id) // wait for components to render before navigating
-    navigate(`/team/${team._id}`)
+    navigate(`/team/${toSlug(team.name)}`)
   }
 
   const handleCancel = () => {

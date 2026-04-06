@@ -2,6 +2,7 @@ import {useContext, useState} from "react"
 import {useNavigate} from "react-router-dom"
 import {AuthContext} from "../context/AuthContext"
 import {DataContext} from "../context/DataContext"
+import {toSlug} from "../utils/toSlug"
 import {LuLayoutGrid, LuList} from "react-icons/lu"
 import Button from "../components/Button"
 import Sidebar from "../components/Sidebar"
@@ -93,7 +94,11 @@ export default function Bookmarks() {
                   last_updated={component.last_updated}
                   isBookmarked={isBookmarked(component._id)}
                   onBookmark={() => toggleBookmark(component)}
-                  onClick={() => navigate("/details", {state: {component}})}
+                  onClick={() => {
+                    const team = teams.find((t) => t._id === component.team)
+                    const path = team ? `/team/${toSlug(team.name)}/details` : "/details"
+                    navigate(path, {state: {component}})
+                  }}
                 />
               ))}
             </div>
@@ -121,7 +126,11 @@ export default function Bookmarks() {
                   link=""
                   isBookmarked={isBookmarked(component._id)}
                   onBookmark={() => toggleBookmark(component)}
-                  onClick={() => navigate("/details", {state: {component}})}
+                  onClick={() => {
+                    const team = teams.find((t) => t._id === component.team)
+                    const path = team ? `/team/${toSlug(team.name)}/details` : "/details"
+                    navigate(path, {state: {component}})
+                  }}
                 />
               ))}
             </div>

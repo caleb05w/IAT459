@@ -14,7 +14,7 @@ import SearchBar from "../components/SearchBar"
 import Dropdown from "../components/Dropdown"
 
 export default function Dashboard() {
-  const {id} = useParams()
+  const {slug} = useParams()
   const {user} = useContext(AuthContext)
   const {activeTeam, components, toggleBookmark, isBookmarked} =
     useContext(DataContext)
@@ -115,7 +115,7 @@ export default function Dashboard() {
                   isBookmarked={isBookmarked(component._id)}
                   onBookmark={() => toggleBookmark(component)}
                   onClick={() =>
-                    navigate(`/team/${id}/details`, {state: {component}})
+                    navigate(`/team/${slug}/details`, {state: {component}})
                   }
                 />
               ))}
@@ -144,7 +144,7 @@ export default function Dashboard() {
                   isBookmarked={isBookmarked(component._id)}
                   onBookmark={() => toggleBookmark(component)}
                   onClick={() =>
-                    navigate(`/team/${id}/details`, {state: {component}})
+                    navigate(`/team/${slug}/details`, {state: {component}})
                   }
                 />
               ))}

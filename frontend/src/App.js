@@ -52,7 +52,7 @@ function App() {
               }
             />
             <Route
-              path='/team/:id'
+              path='/team/:slug'
               element={
                 <ProtectedRoute>
                   <Dashboard />
@@ -68,7 +68,7 @@ function App() {
               }
             />
             <Route
-              path='/team/:id/details'
+              path='/team/:slug/details'
               element={
                 <ProtectedRoute>
                   <Details />
@@ -85,7 +85,7 @@ function App() {
               }
             />
             <Route
-              path='/team/:id/settings'
+              path='/team/:slug/settings'
               element={
                 <ProtectedRoute>
                   <TeamSettings />

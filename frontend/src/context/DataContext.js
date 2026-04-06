@@ -102,10 +102,11 @@ export function DataProvider({children}) {
       const data = await res.json()
       if (res.ok) {
         setTeams(data)
-        const pathTeamId =
-          window.location.pathname.match(/\/team\/([^/]+)/)?.[1]
-        const initialTeam = pathTeamId
-          ? (data.find((t) => t._id === pathTeamId) ?? data[0])
+        const pathSlug = window.location.pathname.match(/\/team\/([^/]+)/)?.[1]
+        const initialTeam = pathSlug
+          ? (data.find(
+              (t) => t.name.toLowerCase().replace(/\s+/g, "-") === pathSlug,
+            ) ?? data[0])
           : data[0]
         setActiveTeam((prev) => prev ?? initialTeam ?? null)
       } else if (res.status === 401) {

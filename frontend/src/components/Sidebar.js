@@ -1,4 +1,5 @@
-import {useContext} from "react"
+import React, {useContext} from "react"
+import {toSlug} from "../utils/toSlug"
 import {useNavigate} from "react-router-dom"
 import {DataContext} from "../context/DataContext"
 import {
@@ -7,6 +8,7 @@ import {
   LuBookmark,
   LuSettings,
   LuStore,
+  LuChevronRight,
 } from "react-icons/lu"
 
 const NAV_ITEMS = [
@@ -37,9 +39,9 @@ export default function Sidebar({
     if (label === "Overview") {
       navigate("/teams")
     } else if (label === "Components" && activeTeam) {
-      navigate(`/team/${activeTeam._id}`)
+      navigate(`/team/${toSlug(activeTeam.name)}`)
     } else if (label === "Team Settings" && activeTeam) {
-      navigate(`/team/${activeTeam._id}/settings`)
+      navigate(`/team/${toSlug(activeTeam.name)}/settings`)
     } else if (path) {
       navigate(path)
     }
@@ -59,17 +61,21 @@ export default function Sidebar({
         {/* Nav items */}
         <nav className='flex-1 px-3 pt-2 flex flex-col gap-[0.25rem]'>
           {visibleNavItems.map(({label, icon: Icon, path}) => (
-            <button
-              key={label}
-              onClick={() => handleNavClick(label, path)}
-              className={`w-full flex items-center gap-[0.5rem] px-3 py-2.5 rounded-xl text-sm transition-colors text-left ${
-                activeNav === label
-                  ? "text-black"
-                  : "text-secondary hover:text-black"
-              }`}>
-              <Icon className='w-4 h-4 shrink-0' />
-              {label}
-            </button>
+            <React.Fragment key={label}>
+              {label === "Components" && (
+                <div className='my-1 border-t border-gray-200' />
+              )}
+              <button
+                onClick={() => handleNavClick(label, path)}
+                className={`w-full flex items-center gap-[0.5rem] px-3 py-2.5 rounded-xl text-sm transition-colors text-left ${
+                  activeNav === label
+                    ? "text-black"
+                    : "text-secondary hover:text-black"
+                }`}>
+                <Icon className='w-4 h-4 shrink-0' />
+                {label}
+              </button>
+            </React.Fragment>
           ))}
         </nav>
 
@@ -82,24 +88,20 @@ export default function Sidebar({
       </div> */}
 
         {/* User footer */}
-        <div className='px-4 py-4 border-t border-gray-100 flex items-center justify-between'>
-          <div className='flex items-center gap-3'>
-            <div className='w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white font-bold text-xs shrink-0'>
-              {username ? username[0].toUpperCase() : "?"}
-            </div>
-            <div className='min-w-0'>
-              <p className='text-sm font-medium text-gray-700 truncate'>
-                {username || "..."}
-              </p>
-              <p className='text-xs text-gray-400'>
-                {currentUserRole || "..."}
-              </p>
-            </div>
+        <button className='mx-3 mb-3 px-3 py-2.5 rounded-xl border border-gray-100 flex items-center gap-3 w-[calc(100%-1.5rem)] hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer group'>
+          <div className='w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white font-bold text-xs shrink-0'>
+            {username ? username[0].toUpperCase() : "?"}
           </div>
-          <button className='text-gray-400 hover:text-gray-600 text-lg leading-none shrink-0'>
-            ···
-          </button>
-        </div>
+          <div className='min-w-0 text-left flex-1'>
+            <p className='text-sm font-medium text-gray-700 truncate'>
+              {username || "..."}
+            </p>
+            <p className='text-xs text-gray-400'>
+              {currentUserRole || "..."}
+            </p>
+          </div>
+          <LuChevronRight className='w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 transition-colors shrink-0' />
+        </button>
       </aside>
     </>
   )
