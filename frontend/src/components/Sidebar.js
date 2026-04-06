@@ -1,6 +1,6 @@
 import React, {useContext} from "react"
 import {toSlug} from "../utils/toSlug"
-import {useNavigate} from "react-router-dom"
+import {useNavigate, useLocation} from "react-router-dom"
 import {DataContext} from "../context/DataContext"
 import {
   LuHouse,
@@ -27,6 +27,18 @@ export default function Sidebar({
 }) {
   const {currentUserRole} = useContext(DataContext)
   const navigate = useNavigate()
+  const {pathname} = useLocation()
+
+  const getActiveNav = () => {
+    if (pathname.endsWith("/settings")) return "Team Settings"
+    if (pathname.endsWith("/details")) return "Components"
+    if (pathname === "/bookmarks") return "Bookmarks"
+    if (pathname === "/marketplace") return "Marketplace"
+    if (pathname.startsWith("/team/")) return "Components"
+    return "Overview"
+  }
+
+  const currentNav = activeNav ?? getActiveNav()
 
   // exists to limit certain options for different users
   const visibleNavItems = NAV_ITEMS.filter(
@@ -68,7 +80,7 @@ export default function Sidebar({
               <button
                 onClick={() => handleNavClick(label, path)}
                 className={`w-full flex items-center gap-[0.5rem] px-3 py-2.5 rounded-xl text-sm transition-colors text-left ${
-                  activeNav === label
+                  currentNav === label
                     ? "text-black"
                     : "text-secondary hover:text-black"
                 }`}>
@@ -96,9 +108,7 @@ export default function Sidebar({
             <p className='text-sm font-medium text-gray-700 truncate'>
               {username || "..."}
             </p>
-            <p className='text-xs text-gray-400'>
-              {currentUserRole || "..."}
-            </p>
+            <p className='text-xs text-gray-400'>{currentUserRole || "..."}</p>
           </div>
           <LuChevronRight className='w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 transition-colors shrink-0' />
         </button>
