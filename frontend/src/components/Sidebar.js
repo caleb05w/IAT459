@@ -1,10 +1,17 @@
 import {useContext} from "react"
 import {useNavigate} from "react-router-dom"
 import {DataContext} from "../context/DataContext"
-import {LuHouse, LuLayoutGrid, LuBookmark, LuSettings} from "react-icons/lu"
+import {
+  LuHouse,
+  LuLayoutGrid,
+  LuBookmark,
+  LuSettings,
+  LuStore,
+} from "react-icons/lu"
 
 const NAV_ITEMS = [
   {label: "Overview", icon: LuHouse, path: "/"},
+  {label: "Marketplace", icon: LuStore, path: "/marketplace"},
   {label: "Bookmarks", icon: LuBookmark, path: "/bookmarks"},
   {label: "Components", icon: LuLayoutGrid, path: "/:teamid"},
   {label: "Team Settings", icon: LuSettings, path: "/settings"},
