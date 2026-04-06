@@ -1,33 +1,39 @@
-import { useContext, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { DataContext } from "../context/DataContext"
-import { LuHouse, LuLayoutGrid, LuBookmark, LuSettings } from "react-icons/lu"
+import {useContext} from "react"
+import {useNavigate} from "react-router-dom"
+import {DataContext} from "../context/DataContext"
+import {LuHouse, LuLayoutGrid, LuBookmark, LuSettings} from "react-icons/lu"
 
 const NAV_ITEMS = [
-  { label: "Overview", icon: LuHouse, path: "/" },
-  { label: "Bookmarks", icon: LuBookmark, path: "/bookmarks" },
-  { label: "Components", icon: LuLayoutGrid, path: "/" },
-  { label: "Team Settings", icon: LuSettings, path: "/settings" },
+  {label: "Overview", icon: LuHouse, path: "/"},
+  {label: "Bookmarks", icon: LuBookmark, path: "/bookmarks"},
+  {label: "Components", icon: LuLayoutGrid, path: "/"},
+  {label: "Team Settings", icon: LuSettings, path: "/settings"},
 ]
 
 export default function Sidebar({
   activeNav,
   setActiveNav,
   activeTeam,
-  setActiveTeam,
-  teams = [],
   username,
-  setShowCreateTeam,
 }) {
-  const { currentUserRole } = useContext(DataContext)
+  const {currentUserRole} = useContext(DataContext)
   const navigate = useNavigate()
-  // const [teamOpen, setTeamOpen] = useState(false)
 
-  const visibleNavItems = NAV_ITEMS
+  // exists to limit certain options for different users
+  const visibleNavItems = NAV_ITEMS.filter(
+    // ({label}) => label !== "Team Settings" || currentUserRole !== "Collaborator",
+    () => true,
+  )
 
   const handleNavClick = (label, path) => {
     setActiveNav?.(label)
-    if (path) navigate(path)
+    if (label === "Overview") {
+      navigate("/teams")
+    } else if (label === "Team Settings" && activeTeam) {
+      navigate(`/team/${activeTeam._id}/settings`)
+    } else if (path) {
+      navigate(path)
+    }
   }
 
   return (
@@ -43,14 +49,15 @@ export default function Sidebar({
 
         {/* Nav items */}
         <nav className='flex-1 px-3 pt-2 flex flex-col gap-[0.25rem]'>
-          {visibleNavItems.map(({ label, icon: Icon, path }) => (
+          {visibleNavItems.map(({label, icon: Icon, path}) => (
             <button
               key={label}
               onClick={() => handleNavClick(label, path)}
-              className={`w-full flex items-center gap-[0.5rem] px-3 py-2.5 rounded-xl text-sm transition-colors text-left ${activeNav === label
-                ? "text-black"
-                : "text-secondary hover:text-black"
-                }`}>
+              className={`w-full flex items-center gap-[0.5rem] px-3 py-2.5 rounded-xl text-sm transition-colors text-left ${
+                activeNav === label
+                  ? "text-black"
+                  : "text-secondary hover:text-black"
+              }`}>
               <Icon className='w-4 h-4 shrink-0' />
               {label}
             </button>

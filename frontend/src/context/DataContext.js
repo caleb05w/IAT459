@@ -34,13 +34,18 @@ export function DataProvider({children}) {
 
   const fetchBookmarks = async () => {
     try {
-      const res = await fetch(`http://localhost:${PORT}/api/users/me/bookmarks`, {
-        headers: {Authorization: `Bearer ${token}`},
-      })
+      const res = await fetch(
+        `http://localhost:${PORT}/api/users/me/bookmarks`,
+        {
+          headers: {Authorization: `Bearer ${token}`},
+        },
+      )
       if (res.ok) {
         const data = await res.json()
         const dict = {}
-        data.forEach((c) => {dict[c._id] = c})
+        data.forEach((c) => {
+          dict[c._id] = c
+        })
         setBookmarks(dict)
       } else if (res.status === 401) {
         logout()
@@ -60,7 +65,9 @@ export function DataProvider({children}) {
       if (res.ok) {
         const data = await res.json()
         const dict = {}
-        data.forEach((c) => {dict[c._id] = c})
+        data.forEach((c) => {
+          dict[c._id] = c
+        })
         setBookmarks(dict)
       }
     } catch (e) {
@@ -95,7 +102,12 @@ export function DataProvider({children}) {
       const data = await res.json()
       if (res.ok) {
         setTeams(data)
-        setActiveTeam((prev) => prev ?? data[0] ?? null)
+        const pathTeamId =
+          window.location.pathname.match(/\/team\/([^/]+)/)?.[1]
+        const initialTeam = pathTeamId
+          ? (data.find((t) => t._id === pathTeamId) ?? data[0])
+          : data[0]
+        setActiveTeam((prev) => prev ?? initialTeam ?? null)
       } else if (res.status === 401) {
         logout()
         navigate("/login")
@@ -141,19 +153,19 @@ export function DataProvider({children}) {
       }
 
       if (activeTeam) {
-        console.log("syncing team", activeTeam._id);
+        console.log("syncing team", activeTeam._id)
         const compRes = await fetch(
           `http://localhost:${PORT}/api/teams/${activeTeam._id}/sync`,
           {method: "POST", headers: {Authorization: `Bearer ${token}`}},
         )
-        console.log("sync status:", compRes.status, compRes.ok);
+        console.log("sync status:", compRes.status, compRes.ok)
         if (compRes.ok) {
           const compData = await compRes.json()
           componentsCache.current[activeTeam._id] = compData
           setComponents(compData)
         } else {
           const errData = await compRes.json()
-          console.log("sync error data:", errData);
+          console.log("sync error data:", errData)
           return errData.message || "Sync failed."
         }
       }
@@ -245,6 +257,7 @@ export function DataProvider({children}) {
         activeTeam,
         setActiveTeam,
         components,
+        fetchComponents,
         refresh,
         createTeam,
         deleteTeam,

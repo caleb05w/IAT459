@@ -16,7 +16,7 @@ import Dropdown from "../components/Dropdown";
 export default function Dashboard() {
   const { id } = useParams();
   const { user } = useContext(AuthContext);
-  const { teams, activeTeam, setActiveTeam, components, toggleBookmark, isBookmarked } =
+  const { activeTeam, components, toggleBookmark, isBookmarked } =
     useContext(DataContext);
   const navigate = useNavigate();
 
@@ -27,14 +27,7 @@ export default function Dashboard() {
   );
   const [sortBy, setSortBy] = useState("Latest");
 
-  // Set active team from URL param
-  useEffect(() => {
-    if (!teams.length) return;
-    const team = teams.find((t) => t._id === id);
-    if (team) setActiveTeam(team);
-  }, [id, teams]);
-
-  useEffect(() => {
+useEffect(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return setFilteredComponents(components);
     setFilteredComponents(
@@ -58,13 +51,7 @@ export default function Dashboard() {
     <div className="relative min-h-screen flex bg-white">
       <Sidebar
         activeTeam={activeTeam}
-        setActiveTeam={(team) => {
-          setActiveTeam(team);
-          navigate(`/team/${team._id}`);
-        }}
-        teams={teams}
         username={username}
-        setShowCreateTeam={() => navigate("/teams")}
       />
       <main className="relative flex-1 flex flex-col min-w-0 overflow-hidden">
         <ProtectedNavbar
@@ -130,7 +117,7 @@ export default function Dashboard() {
                   link={component.link}
                   isBookmarked={isBookmarked(component._id)}
                   onBookmark={() => toggleBookmark(component)}
-                  onClick={() => navigate("/details", { state: { component } })}
+                  onClick={() => navigate(`/team/${id}/details`, {state: {component}})}
                 />
               ))}
             </div>
@@ -157,7 +144,7 @@ export default function Dashboard() {
                   link={""}
                   isBookmarked={isBookmarked(component._id)}
                   onBookmark={() => toggleBookmark(component)}
-                  onClick={() => navigate("/details", { state: { component } })}
+                  onClick={() => navigate(`/team/${id}/details`, {state: {component}})}
                 />
               ))}
             </div>
