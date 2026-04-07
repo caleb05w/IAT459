@@ -108,9 +108,10 @@ export default function Dashboard() {
                 <DashboardCard
                   key={i}
                   header={component.name}
-                  body={component.description}
-                  thumbnail={component.thumbnail}
-                  last_updated={component.last_updated}
+                  body={component.curr_description}
+                  thumbnail={component.curr_thumbnail}
+                  last_updated={component.curr_last_updated}
+                  hasUpdate={component.hasUpdate}
                   link={component.link}
                   isBookmarked={isBookmarked(component._id)}
                   onBookmark={() => toggleBookmark(component)}
@@ -137,9 +138,10 @@ export default function Dashboard() {
                 <DashboardList
                   key={i}
                   name={component.name}
-                  thumbnail={component.thumbnail}
-                  user={component.user}
-                  last_updated={component.last_updated}
+                  thumbnail={component.curr_thumbnail}
+                  user={component.last_user}
+                  last_updated={component.curr_last_updated}
+                  hasUpdate={component.hasUpdate}
                   link={""}
                   isBookmarked={isBookmarked(component._id)}
                   onBookmark={() => toggleBookmark(component)}

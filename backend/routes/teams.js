@@ -318,22 +318,52 @@ router.post("/:id/sync", verifyToken, async (req, res) => {
     // upsert each Figma component into our DB and collect its _id
     const componentIds = []
     for (const entry of entries) {
-      // match on team + node_id -->  re-syncing updates existing records instead of duplicating
-      const component = await Component.findOneAndUpdate(
-        {team: team._id, node_id: entry.node_id},
-        {
+      const figmaName = entry.name
+      const figmaDesc = entry.description ?? ""
+      const figmaUpdated = entry.updated_at
+      const figmaUser = entry.created_by?.handle ?? "Unknown"
+      const figmaThumbnail = entry.thumbnail_url ?? null
+      const figmaLink = `https://www.figma.com/design/${entry.file_key}?node-id=${entry.node_id}`
+      const figmaFileId = entry.file_key ?? ""
+
+      const existing = await Component.findOne({team: team._id, node_id: entry.node_id})
+
+      let component
+      if (!existing) {
+        // First sync: populate both curr and inc with the same Figma data
+        component = await Component.create({
           team: team._id,
           node_id: entry.node_id,
-          name: entry.name,
-          description: entry.description ?? "",
-          last_updated: entry.updated_at,
-          user: entry.created_by?.handle ?? "Unknown",
-          thumbnail: entry.thumbnail_url ?? null,
-          // build a direct link to the component in Figma
-          link: `https://www.figma.com/design/${entry.file_key}?node-id=${entry.node_id}`,
-        },
-        {upsert: true, returnDocument: "after"},
-      )
+          file_id: figmaFileId,
+          name: figmaName,
+          last_user: figmaUser,
+          inc_last_user: figmaUser,
+          curr_description: figmaDesc,
+          inc_description: figmaDesc,
+          curr_last_updated: figmaUpdated,
+          inc_last_updated: figmaUpdated,
+          curr_thumbnail: figmaThumbnail,
+          inc_thumbnail: figmaThumbnail,
+          link: figmaLink,
+          hasUpdate: false,
+        })
+      } else {
+        // Always update inc fields with the latest from Figma
+        existing.inc_description = figmaDesc
+        existing.inc_last_updated = figmaUpdated
+        existing.inc_thumbnail = figmaThumbnail
+        existing.inc_last_user = figmaUser
+        existing.link = figmaLink
+
+        // If Figma timestamp changed vs what we accepted, flag as updated
+        if (figmaUpdated !== existing.curr_last_updated) {
+          existing.name = figmaName
+          existing.last_user = figmaUser
+          existing.hasUpdate = true
+        }
+
+        component = await existing.save()
+      }
       componentIds.push(component._id)
     }
 
@@ -344,6 +374,34 @@ router.post("/:id/sync", verifyToken, async (req, res) => {
     // return all components for this team to the frontend
     const components = await Component.find({team: team._id})
     res.json(components)
+  } catch (err) {
+    res.status(500).json({message: err.message})
+  }
+})
+
+// POST /api/teams/:id/components/:componentId/accept — accept incoming update (inc -> curr)
+router.post("/:id/components/:componentId/accept", verifyToken, async (req, res) => {
+  try {
+    const team = await Team.findById(req.params.id)
+    if (!team) return res.status(404).json({message: "Team not found"})
+
+    const isMember =
+      team.owner.equals(req.user.id) ||
+      team.admins?.some((a) => a.equals(req.user.id)) ||
+      team.contributors.some((c) => c.equals(req.user.id))
+    if (!isMember) return res.status(403).json({message: "Not a team member"})
+
+    const component = await Component.findById(req.params.componentId)
+    if (!component) return res.status(404).json({message: "Component not found"})
+
+    component.curr_description = component.inc_description
+    component.curr_last_updated = component.inc_last_updated
+    component.curr_thumbnail = component.inc_thumbnail
+    component.last_user = component.inc_last_user
+    component.hasUpdate = false
+    await component.save()
+
+    res.json(component)
   } catch (err) {
     res.status(500).json({message: err.message})
   }

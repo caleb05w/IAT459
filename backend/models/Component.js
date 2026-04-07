@@ -7,6 +7,7 @@ const componentSchema = new mongoose.Schema({
   link: {type: String},
   public: {type: Boolean},
   last_user: {type: String, default: "Unknown"},
+  inc_last_user: {type: String, default: "Unknown"},
   name: {type: String, required: true},
   hasUpdate: {type: Boolean, default: false},
 

@@ -5,6 +5,7 @@ export default function DashboardCard({
   body,
   thumbnail,
   last_updated,
+  hasUpdate,
   onClick,
   isBookmarked,
   onBookmark,
@@ -16,6 +17,11 @@ export default function DashboardCard({
       style={{ boxShadow: "0 4px 24px 0 rgba(0,0,0,0.06)" }}
     >
       <div className="relative flex h-[16rem] p-4">
+        {hasUpdate && (
+          <div className="absolute top-3 left-3 px-2 py-0.5 bg-black text-white text-[10px] font-medium rounded z-10">
+            Update Available
+          </div>
+        )}
         {thumbnail ? (
           <img
             src={thumbnail}

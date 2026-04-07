@@ -32,6 +32,9 @@ export default function Details() {
   const [isPublic, setIsPublic] = useState(component?.public ?? false)
   const [visibilityOpen, setVisibilityOpen] = useState(false)
   const [visibilityLoading, setVisibilityLoading] = useState(false)
+  const [hasUpdate, setHasUpdate] = useState(component?.hasUpdate ?? false)
+  const [liveComponent, setLiveComponent] = useState(component)
+  const [acceptLoading, setAcceptLoading] = useState(false)
 
   //handles visibility change update.
   const handleVisibilityChange = async (value) => {
@@ -65,6 +68,27 @@ export default function Details() {
     setVisibilityLoading(false)
   }
 
+  const handleAccept = async () => {
+    setAcceptLoading(true)
+    try {
+      const teamId = activeTeam?._id ?? liveComponent.team
+      const res = await fetch(
+        `http://localhost:${PORT}/api/teams/${teamId}/components/${liveComponent._id}/accept`,
+        {method: "POST", headers: {Authorization: `Bearer ${token}`}},
+      )
+      if (res.ok) {
+        const updated = await res.json()
+        setLiveComponent(updated)
+        setHasUpdate(false)
+      } else {
+        console.warn("Failed to accept update")
+      }
+    } catch (e) {
+      console.warn("Error accepting update", e)
+    }
+    setAcceptLoading(false)
+  }
+
   //if for some reason there is no component [?] just kill this lol
   if (!component) {
     navigate("/")
@@ -83,7 +107,7 @@ export default function Details() {
       />
       <main className='flex-1 flex flex-col min-w-0'>
         <ProtectedNavbar
-          breadcrumbs={[activeTeam?.name, "Components", component.name]}
+          breadcrumbs={[activeTeam?.name, "Components", liveComponent.name]}
           onBreadcrumbClick={(i) => {
             if (i === 0 || i === 1) navigate(`/team/${activeTeam._id}`);
           }}
@@ -91,31 +115,89 @@ export default function Details() {
 
         {/* Content */}
         <div className='flex-1 px-8 pt-8 pb-10 flex flex-col gap-8 bg-transparent'>
-          {/* Preview */}
-          <div
-            className='w-full rounded-2xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center'
-            style={{minHeight: "360px"}}>
-            {component.thumbnail ? (
-              <img
-                src={component.thumbnail}
-                alt={component.name}
-                className='max-w-full max-h-[480px] object-contain'
-              />
-            ) : (
-              <span className='text-gray-300 text-sm'>
-                No preview available
-              </span>
-            )}
-          </div>
 
-          {/* Info */}
+          {/* Preview — side by side if hasUpdate, single if not */}
+          {hasUpdate ? (
+            <div className='flex gap-6 w-full'>
+              {/* Current */}
+              <div className='flex-1 flex flex-col gap-3'>
+                <div className='flex items-center gap-2'>
+                  <span className='px-2 py-0.5 rounded text-xs font-medium border border-gray-300 text-gray-600'>Current Version</span>
+                </div>
+                <div
+                  className='w-full rounded-2xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center'
+                  style={{minHeight: "300px"}}>
+                  {liveComponent.curr_thumbnail ? (
+                    <img src={liveComponent.curr_thumbnail} alt='Current' className='max-w-full max-h-[400px] object-contain' />
+                  ) : (
+                    <span className='text-gray-300 text-sm'>No preview available</span>
+                  )}
+                </div>
+                <div>
+                  <p className='text-xs font-medium text-gray-400 uppercase tracking-wide mb-1'>Description</p>
+                  <p className='text-sm text-gray-600 leading-relaxed'>{liveComponent.curr_description || "No description provided."}</p>
+                </div>
+                <div>
+                  <p className='text-xs font-medium text-gray-400 uppercase tracking-wide mb-1'>Author</p>
+                  <p className='text-sm text-gray-600'>{liveComponent.last_user}</p>
+                </div>
+              </div>
+
+              {/* Incoming */}
+              <div className='flex-1 flex flex-col gap-3'>
+                <div className='flex items-center gap-2'>
+                  <span className='px-2 py-0.5 rounded text-xs font-medium bg-black text-white'>Incoming Version</span>
+                </div>
+                <div
+                  className='w-full rounded-2xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center'
+                  style={{minHeight: "300px"}}>
+                  {liveComponent.inc_thumbnail ? (
+                    <img src={liveComponent.inc_thumbnail} alt='Incoming' className='max-w-full max-h-[400px] object-contain' />
+                  ) : (
+                    <span className='text-gray-300 text-sm'>No preview available</span>
+                  )}
+                </div>
+                <div>
+                  <p className='text-xs font-medium text-gray-400 uppercase tracking-wide mb-1'>Description</p>
+                  <p className='text-sm text-gray-600 leading-relaxed'>{liveComponent.inc_description || "No description provided."}</p>
+                </div>
+                <div>
+                  <p className='text-xs font-medium text-gray-400 uppercase tracking-wide mb-1'>Author</p>
+                  <p className='text-sm text-gray-600'>{liveComponent.inc_last_user}</p>
+                </div>
+                <button
+                  onClick={handleAccept}
+                  disabled={acceptLoading}
+                  className='mt-2 w-fit px-4 py-2 rounded-full bg-black text-white text-sm hover:opacity-80 transition-opacity disabled:opacity-50'>
+                  {acceptLoading ? "Accepting…" : "Accept Update"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div
+              className='w-full rounded-2xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center'
+              style={{minHeight: "360px"}}>
+              {liveComponent.curr_thumbnail ? (
+                <img
+                  src={liveComponent.curr_thumbnail}
+                  alt={liveComponent.name}
+                  className='max-w-full max-h-[480px] object-contain'
+                />
+              ) : (
+                <span className='text-gray-300 text-sm'>No preview available</span>
+              )}
+            </div>
+          )}
+
+          {/* Info — only shown in single view */}
+          {!hasUpdate && (
           <div className='flex flex-col gap-5 max-w-2xl'>
             <div>
               <p className='text-xs font-medium text-gray-400 uppercase tracking-wide mb-1'>
                 Component Name
               </p>
               <h1 className='text-2xl font-semibold text-gray-900'>
-                {component.name}
+                {liveComponent.name}
               </h1>
             </div>
 
@@ -124,7 +206,7 @@ export default function Details() {
                 Description
               </p>
               <p className='text-sm text-gray-600 leading-relaxed'>
-                {component.description || "No description provided."}
+                {liveComponent.curr_description || "No description provided."}
               </p>
             </div>
 
@@ -133,7 +215,7 @@ export default function Details() {
                 Last Updated
               </p>
               <p className='text-sm text-gray-600'>
-                {formatDateTime(component.last_updated)}
+                {formatDateTime(liveComponent.curr_last_updated)}
               </p>
             </div>
 
@@ -187,7 +269,7 @@ export default function Details() {
               <div className='rounded-xl border border-gray-200 overflow-hidden'>
                 <table className='w-full text-sm'>
                   <tbody>
-                    {Object.entries(component).map(([key, value]) => (
+                    {Object.entries(liveComponent).map(([key, value]) => (
                       <tr
                         key={key}
                         className='border-b border-gray-100 last:border-0'>
@@ -210,6 +292,7 @@ export default function Details() {
               </div>
             )}
           </div>
+          )}
         </div>
       </main>
 
