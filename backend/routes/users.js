@@ -3,6 +3,38 @@ const router = express.Router()
 const User = require("../models/User")
 const verifyToken = require("../middleware/authMiddleware")
 
+// GET /api/users/me — get current user's profile
+router.get("/me", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password")
+    if (!user) return res.status(404).json({message: "User not found"})
+    res.json(user)
+  } catch (err) {
+    res.status(500).json({message: err.message})
+  }
+})
+
+// PATCH /api/users/me — update current user's profile (fName, lName, figmaToken)
+router.patch("/me", verifyToken, async (req, res) => {
+  try {
+    const {fName, lName, figmaToken} = req.body
+    const updates = {}
+    if (fName !== undefined) updates.fName = fName
+    if (lName !== undefined) updates.lName = lName
+    // if (figmaToken !== undefined) updates.figmaToken = figmaToken
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      {$set: updates},
+      {returnDocument: "after"},
+    ).select("-password")
+    if (!user) return res.status(404).json({message: "User not found"})
+    res.json(user)
+  } catch (err) {
+    res.status(500).json({message: err.message})
+  }
+})
+
 // GET /api/users/me/bookmarks — get current user's bookmarked components (populated)
 router.get("/me/bookmarks", verifyToken, async (req, res) => {
   try {

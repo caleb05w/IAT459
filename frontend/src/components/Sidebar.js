@@ -25,7 +25,12 @@ export default function Sidebar({
   activeTeam,
   username,
 }) {
-  const {currentUserRole} = useContext(DataContext)
+  const {currentUserRole, userProfile} = useContext(DataContext)
+  const displayName = userProfile?.fName
+    ? userProfile.lName
+      ? `${userProfile.fName} ${userProfile.lName[0]}`
+      : userProfile.fName
+    : username
   const navigate = useNavigate()
   const {pathname} = useLocation()
 
@@ -100,13 +105,19 @@ export default function Sidebar({
       </div> */}
 
         {/* User footer */}
-        <button className='mx-3 mb-3 px-3 py-2.5 rounded-xl border border-gray-100 flex items-center gap-3 w-[calc(100%-1.5rem)] hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer group'>
+        <button
+          onClick={() => navigate("/profile")}
+          className='mx-3 mb-3 px-3 py-2.5 rounded-xl border border-gray-100 flex items-center gap-3 w-[calc(100%-1.5rem)] hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer group'>
           <div className='w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white font-bold text-xs shrink-0'>
-            {username ? username[0].toUpperCase() : "?"}
+            {userProfile?.fName
+              ? `${userProfile.fName[0]}${userProfile.lName ? userProfile.lName[0] : ""}`.toUpperCase()
+              : username
+              ? username[0].toUpperCase()
+              : "?"}
           </div>
           <div className='min-w-0 text-left flex-1'>
             <p className='text-sm font-medium text-gray-700 truncate'>
-              {username || "..."}
+              {displayName}
             </p>
             <p className='text-xs text-gray-400'>{currentUserRole || "..."}</p>
           </div>

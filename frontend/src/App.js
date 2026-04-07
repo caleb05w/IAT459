@@ -14,6 +14,7 @@ import Details from "./pages/Details"
 import Marketplace from "./pages/Marketplace"
 import TeamSettings from "./pages/TeamSettings"
 import Bookmarks from "./pages/Bookmarks"
+import UserProfile from "./pages/UserProfile"
 import {Agentation} from "agentation"
 import ProtectedRoute from "./ProtectedRoute"
 
@@ -89,6 +90,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <TeamSettings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/profile'
+              element={
+                <ProtectedRoute>
+                  <UserProfile />
                 </ProtectedRoute>
               }
             />

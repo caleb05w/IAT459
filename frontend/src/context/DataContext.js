@@ -22,9 +22,44 @@ export function DataProvider({children}) {
   const [activeTeam, setActiveTeam] = useState(null)
   const [components, setComponents] = useState([])
   const [bookmarks, setBookmarks] = useState({})
+  const [userProfile, setUserProfile] = useState(null)
 
   // Cache: teamId -> components[]
   const componentsCache = useRef({})
+
+  // Load user profile from server when token is available
+  useEffect(() => {
+    if (!token) return
+    fetch(`http://localhost:${PORT}/api/users/me`, {
+      headers: {Authorization: `Bearer ${token}`},
+    })
+      .then((r) => r.json())
+      .then((data) => setUserProfile(data))
+      .catch((e) => console.warn("Error fetching user profile", e))
+  }, [token])
+
+  const updateProfile = async ({fName, lName, figmaToken}) => {
+    const updates = {}
+    if (fName !== undefined) updates.fName = fName
+    if (lName !== undefined) updates.lName = lName
+    if (figmaToken !== undefined) updates.figmaToken = figmaToken
+    try {
+      const res = await fetch(`http://localhost:${PORT}/api/users/me`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updates),
+      })
+      const data = await res.json()
+      if (res.ok) setUserProfile(data)
+      return res.ok
+    } catch (e) {
+      console.warn("Error updating profile", e)
+      return false
+    }
+  }
 
   // Load bookmarks from server when token is available
   useEffect(() => {
@@ -267,6 +302,8 @@ export function DataProvider({children}) {
         bookmarks,
         toggleBookmark,
         isBookmarked,
+        userProfile,
+        updateProfile,
       }}>
       {children}
     </DataContext.Provider>
