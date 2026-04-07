@@ -16,7 +16,7 @@ export default function Dropdown({ value, options, onChange }) {
         />
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-md z-10 overflow-hidden">
+        <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-md z-50 overflow-hidden">
           {options.map((option) => (
             <button
               key={option}

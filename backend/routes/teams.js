@@ -11,8 +11,13 @@ router.post("/", verifyToken, async (req, res) => {
   try {
     const {name, externalId} = req.body
 
-    if (!name || !name.trim()) return res.status(400).json({message: "Team name is required."})
-    if (!externalId) return res.status(400).json({message: "Invalid Figma team URL. Expected format: figma.com/files/team/123456789/..."})
+    if (!name || !name.trim())
+      return res.status(400).json({message: "Team name is required."})
+    if (!externalId)
+      return res.status(400).json({
+        message:
+          "Invalid Figma team URL. Expected format: figma.com/files/team/123456789/...",
+      })
 
     const newTeam = new Team({
       name,
@@ -55,9 +60,27 @@ router.get("/:id", verifyToken, async (req, res) => {
 // helper — build the members array from a populated team doc
 function buildMembers(team) {
   return [
-    {_id: team.owner._id, username: team.owner.username, fName: team.owner.fName, lName: team.owner.lName, role: "Owner"},
-    ...team.admins.map((a) => ({_id: a._id, username: a.username, fName: a.fName, lName: a.lName, role: "Admin"})),
-    ...team.contributors.map((c) => ({_id: c._id, username: c.username, fName: c.fName, lName: c.lName, role: "Collaborator"})),
+    {
+      _id: team.owner._id,
+      username: team.owner.username,
+      fName: team.owner.fName,
+      lName: team.owner.lName,
+      role: "Owner",
+    },
+    ...team.admins.map((a) => ({
+      _id: a._id,
+      username: a.username,
+      fName: a.fName,
+      lName: a.lName,
+      role: "Admin",
+    })),
+    ...team.contributors.map((c) => ({
+      _id: c._id,
+      username: c.username,
+      fName: c.fName,
+      lName: c.lName,
+      role: "Collaborator",
+    })),
   ]
 }
 
@@ -79,15 +102,22 @@ router.get("/:id/members", verifyToken, async (req, res) => {
 router.post("/:id/members", verifyToken, async (req, res) => {
   try {
     const {username, role} = req.body
-    if (!username) return res.status(400).json({message: "Username is required"})
-    if (!["Admin", "Collaborator"].includes(role)) return res.status(400).json({message: "Role must be Admin or Collaborator"})
+    if (!username)
+      return res.status(400).json({message: "Username is required"})
+    if (!["Admin", "Collaborator"].includes(role))
+      return res
+        .status(400)
+        .json({message: "Role must be Admin or Collaborator"})
 
     const team = await Team.findById(req.params.id)
     if (!team) return res.status(404).json({message: "Team not found"})
 
     const isOwner = team.owner.equals(req.user.id)
     const isAdmin = team.admins.some((a) => a.equals(req.user.id))
-    if (!isOwner && !isAdmin) return res.status(403).json({message: "Only owners or admins can add members"})
+    if (!isOwner && !isAdmin)
+      return res
+        .status(403)
+        .json({message: "Only owners or admins can add members"})
 
     const User = require("../models/User")
     const newUser = await User.findOne({username})
@@ -98,7 +128,8 @@ router.post("/:id/members", verifyToken, async (req, res) => {
       team.owner.equals(newUser._id) ||
       team.admins.some((a) => a.equals(newUser._id)) ||
       team.contributors.some((c) => c.equals(newUser._id))
-    if (alreadyMember) return res.status(409).json({message: "User is already a member"})
+    if (alreadyMember)
+      return res.status(409).json({message: "User is already a member"})
 
     if (role === "Admin") team.admins.push(newUser._id)
     else team.contributors.push(newUser._id)
@@ -118,15 +149,20 @@ router.post("/:id/members", verifyToken, async (req, res) => {
 router.patch("/:id/members/:userId/role", verifyToken, async (req, res) => {
   try {
     const {role} = req.body
-    if (!["Owner", "Admin", "Collaborator"].includes(role)) return res.status(400).json({message: "Invalid role"})
+    if (!["Owner", "Admin", "Collaborator"].includes(role))
+      return res.status(400).json({message: "Invalid role"})
 
     const team = await Team.findById(req.params.id)
     if (!team) return res.status(404).json({message: "Team not found"})
 
     const isOwner = team.owner.equals(req.user.id)
     const isAdmin = team.admins.some((a) => a.equals(req.user.id))
-    if (!isOwner && !isAdmin) return res.status(403).json({message: "Insufficient permissions"})
-    if (!isOwner && role === "Owner") return res.status(403).json({message: "Only the owner can transfer ownership"})
+    if (!isOwner && !isAdmin)
+      return res.status(403).json({message: "Insufficient permissions"})
+    if (!isOwner && role === "Owner")
+      return res
+        .status(403)
+        .json({message: "Only the owner can transfer ownership"})
 
     const targetId = req.params.userId
 
@@ -175,7 +211,9 @@ router.delete("/:id/members/:userId", verifyToken, async (req, res) => {
       return res.status(400).json({message: "Cannot remove the team owner"})
 
     team.admins = team.admins.filter((a) => !a.equals(req.params.userId))
-    team.contributors = team.contributors.filter((c) => !c.equals(req.params.userId))
+    team.contributors = team.contributors.filter(
+      (c) => !c.equals(req.params.userId),
+    )
     await team.save()
 
     // Clean up: remove this team's components from the removed user's bookmarks
@@ -258,7 +296,9 @@ router.delete("/:id", verifyToken, async (req, res) => {
     const team = await Team.findById(req.params.id)
     if (!team) return res.status(404).json({message: "Team not found"})
     if (!team.owner.equals(req.user.id))
-      return res.status(403).json({message: "Only the owner can delete the team"})
+      return res
+        .status(403)
+        .json({message: "Only the owner can delete the team"})
 
     await Component.deleteMany({team: team._id})
     await team.deleteOne()
@@ -272,11 +312,15 @@ router.delete("/:id", verifyToken, async (req, res) => {
 router.patch("/:id", verifyToken, async (req, res) => {
   try {
     const {name} = req.body
-    if (!name || !name.trim()) return res.status(400).json({message: "Name is required"})
+    if (!name || !name.trim())
+      return res.status(400).json({message: "Name is required"})
 
     const team = await Team.findById(req.params.id)
     if (!team) return res.status(404).json({message: "Team not found"})
-    if (!team.owner.equals(req.user.id)) return res.status(403).json({message: "Only the owner can rename the team"})
+    if (!team.owner.equals(req.user.id))
+      return res
+        .status(403)
+        .json({message: "Only the owner can rename the team"})
 
     team.name = name.trim()
     await team.save()
@@ -306,7 +350,7 @@ router.post("/:id/sync", verifyToken, async (req, res) => {
       {headers: {"X-Figma-Token": FIGMA_TOKEN}},
     )
     const figmaData = await figmaRes.json()
-    console.log("Figma sync response:", JSON.stringify(figmaData, null, 2));
+    console.log("Figma sync response:", JSON.stringify(figmaData, null, 2))
 
     if (figmaData.error) {
       return res.status(figmaData.status).json({message: figmaData.message})
@@ -326,7 +370,10 @@ router.post("/:id/sync", verifyToken, async (req, res) => {
       const figmaLink = `https://www.figma.com/design/${entry.file_key}?node-id=${entry.node_id}`
       const figmaFileId = entry.file_key ?? ""
 
-      const existing = await Component.findOne({team: team._id, node_id: entry.node_id})
+      const existing = await Component.findOne({
+        team: team._id,
+        node_id: entry.node_id,
+      })
 
       let component
       if (!existing) {
@@ -380,32 +427,37 @@ router.post("/:id/sync", verifyToken, async (req, res) => {
 })
 
 // POST /api/teams/:id/components/:componentId/accept — accept incoming update (inc -> curr)
-router.post("/:id/components/:componentId/accept", verifyToken, async (req, res) => {
-  try {
-    const team = await Team.findById(req.params.id)
-    if (!team) return res.status(404).json({message: "Team not found"})
+router.post(
+  "/:id/components/:componentId/accept",
+  verifyToken,
+  async (req, res) => {
+    try {
+      const team = await Team.findById(req.params.id)
+      if (!team) return res.status(404).json({message: "Team not found"})
 
-    const isMember =
-      team.owner.equals(req.user.id) ||
-      team.admins?.some((a) => a.equals(req.user.id)) ||
-      team.contributors.some((c) => c.equals(req.user.id))
-    if (!isMember) return res.status(403).json({message: "Not a team member"})
+      const isMember =
+        team.owner.equals(req.user.id) ||
+        team.admins?.some((a) => a.equals(req.user.id)) ||
+        team.contributors.some((c) => c.equals(req.user.id))
+      if (!isMember) return res.status(403).json({message: "Not a team member"})
 
-    const component = await Component.findById(req.params.componentId)
-    if (!component) return res.status(404).json({message: "Component not found"})
+      const component = await Component.findById(req.params.componentId)
+      if (!component)
+        return res.status(404).json({message: "Component not found"})
 
-    component.curr_description = component.inc_description
-    component.curr_last_updated = component.inc_last_updated
-    component.curr_thumbnail = component.inc_thumbnail
-    component.last_user = component.inc_last_user
-    component.hasUpdate = false
-    await component.save()
+      component.curr_description = component.inc_description
+      component.curr_last_updated = component.inc_last_updated
+      component.curr_thumbnail = component.inc_thumbnail
+      component.last_user = component.inc_last_user
+      component.hasUpdate = false
+      await component.save()
 
-    res.json(component)
-  } catch (err) {
-    res.status(500).json({message: err.message})
-  }
-})
+      res.json(component)
+    } catch (err) {
+      res.status(500).json({message: err.message})
+    }
+  },
+)
 
 // GET /api/teams/:id/components — get all components for a team
 router.get("/:id/components", verifyToken, async (req, res) => {

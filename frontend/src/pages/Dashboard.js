@@ -28,12 +28,24 @@ export default function Dashboard() {
   const [sortBy, setSortBy] = useState("Latest")
 
   useEffect(() => {
+    let result = [...components]
+    if (sortBy === "Updated") {
+      result = result.filter((c) => c.hasUpdate)
+    } else if (sortBy === "Latest") {
+      result.sort(
+        (a, b) => new Date(b.curr_last_updated) - new Date(a.curr_last_updated),
+      )
+    } else if (sortBy === "Oldest") {
+      result.sort(
+        (a, b) => new Date(a.curr_last_updated) - new Date(b.curr_last_updated),
+      )
+    } else if (sortBy === "A-Z") {
+      result.sort((a, b) => a.name.localeCompare(b.name))
+    }
     const q = searchQuery.trim().toLowerCase()
-    if (!q) return setFilteredComponents(components)
-    setFilteredComponents(
-      components.filter((c) => c.name.toLowerCase().includes(q)),
-    )
-  }, [searchQuery, components])
+    if (q) result = result.filter((c) => c.name.toLowerCase().includes(q))
+    setFilteredComponents(result)
+  }, [searchQuery, components, sortBy])
 
   useEffect(() => {
     setFilteredComponents(components)
@@ -67,7 +79,7 @@ export default function Dashboard() {
             <div className='flex flex-row gap-[0.5rem]'>
               <Dropdown
                 value={sortBy}
-                options={["Latest", "Newest", "All"]}
+                options={["Latest", "Oldest", "A-Z", "Updated"]}
                 onChange={setSortBy}
               />
               <SearchBar value={searchQuery} onChange={setSearchQuery} />
