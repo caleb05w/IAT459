@@ -1,10 +1,11 @@
 import {useContext, useState} from "react"
 import {useLocation, useNavigate} from "react-router-dom"
-import {LuChevronDown} from "react-icons/lu"
 import {AuthContext} from "../context/AuthContext"
 import {DataContext} from "../context/DataContext"
 import Sidebar from "../components/Sidebar"
 import ProtectedNavbar from "../components/ProtectedNavbar"
+import Button from "../components/Button"
+import Dropdown from "../components/Dropdown"
 
 const PORT = 5001
 
@@ -30,7 +31,6 @@ export default function Details() {
   const [activeNav, setActiveNav] = useState("Components")
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [isPublic, setIsPublic] = useState(component?.public ?? false)
-  const [visibilityOpen, setVisibilityOpen] = useState(false)
   const [visibilityLoading, setVisibilityLoading] = useState(false)
   const [hasUpdate, setHasUpdate] = useState(component?.hasUpdate ?? false)
   const [liveComponent, setLiveComponent] = useState(component)
@@ -39,7 +39,6 @@ export default function Details() {
   //handles visibility change update.
   const handleVisibilityChange = async (value) => {
     setVisibilityLoading(true)
-    setVisibilityOpen(false)
     try {
       // prefer the activeTeam passed via router state.
       // if arriving from Marketplace, activeTeam is null, so fall back to
@@ -115,6 +114,23 @@ export default function Details() {
 
         {/* Content */}
         <div className='flex-1 px-8 pt-8 pb-10 flex flex-col gap-8 bg-transparent'>
+<<<<<<< Updated upstream
+=======
+          {/* Preview */}
+          <div
+            className='w-full rounded-2xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center'
+            style={{minHeight: "360px"}}>
+            {component.thumbnail ? (
+              <img
+                src={component.thumbnail}
+                alt={component.name}
+                className='max-w-full max-h-[480px] object-contain'
+              />
+            ) : (
+              <h6 className='text-gray-300'>No preview available</h6>
+            )}
+          </div>
+>>>>>>> Stashed changes
 
           {/* Preview — side by side if hasUpdate, single if not */}
           {hasUpdate ? (
@@ -193,77 +209,66 @@ export default function Details() {
           {!hasUpdate && (
           <div className='flex flex-col gap-5 max-w-2xl'>
             <div>
-              <p className='text-xs font-medium text-gray-400 uppercase tracking-wide mb-1'>
+              <h6 className='uppercase tracking-wide text-gray-400 mb-1'>
                 Component Name
+<<<<<<< Updated upstream
               </p>
               <h1 className='text-2xl font-semibold text-gray-900'>
                 {liveComponent.name}
               </h1>
+=======
+              </h6>
+              <h1 className='text-gray-900'>{component.name}</h1>
+>>>>>>> Stashed changes
             </div>
 
             <div>
-              <p className='text-xs font-medium text-gray-400 uppercase tracking-wide mb-1'>
+              <h6 className='uppercase tracking-wide text-gray-400 mb-1'>
                 Description
+<<<<<<< Updated upstream
               </p>
               <p className='text-sm text-gray-600 leading-relaxed'>
                 {liveComponent.curr_description || "No description provided."}
+=======
+              </h6>
+              <p className='text-gray-600'>
+                {component.description || "No description provided."}
+>>>>>>> Stashed changes
               </p>
             </div>
 
             <div>
-              <p className='text-xs font-medium text-gray-400 uppercase tracking-wide mb-1'>
+              <h6 className='uppercase tracking-wide text-gray-400 mb-1'>
                 Last Updated
+<<<<<<< Updated upstream
               </p>
               <p className='text-sm text-gray-600'>
                 {formatDateTime(liveComponent.curr_last_updated)}
+=======
+              </h6>
+              <p className='text-gray-600'>
+                {formatDateTime(component.last_updated)}
+>>>>>>> Stashed changes
               </p>
             </div>
 
             <div>
-              <p className='text-xs font-medium text-gray-400 uppercase tracking-wide mb-1'>
+              <h6 className='uppercase tracking-wide text-gray-400 mb-1'>
                 Visibility
-              </p>
-              <div className='relative w-fit'>
-                <button
-                  onClick={() => setVisibilityOpen((v) => !v)}
-                  disabled={visibilityLoading}
-                  className='flex items-center gap-6 px-4 py-2 border border-gray-200 rounded-lg bg-white text-sm text-gray-600 hover:bg-gray-50 transition-colors min-w-[130px] justify-between disabled:opacity-50'>
-                  {visibilityLoading
-                    ? "Saving…"
-                    : isPublic
-                      ? "Public"
-                      : "Private"}
-                  <LuChevronDown
-                    className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${visibilityOpen ? "rotate-180" : ""}`}
-                  />
-                </button>
-                {visibilityOpen && (
-                  <div className='absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-md z-10 overflow-hidden'>
-                    {[
-                      {label: "Public", value: true},
-                      {label: "Private", value: false},
-                    ].map(({label, value}) => (
-                      <button
-                        key={label}
-                        onClick={() => handleVisibilityChange(value)}
-                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                          isPublic === value
-                            ? "bg-gray-100 text-gray-900 font-medium"
-                            : "text-gray-600 hover:bg-gray-50"
-                        }`}>
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              </h6>
+              <Dropdown
+                value={visibilityLoading ? "Saving…" : isPublic ? "Public" : "Private"}
+                options={["Public", "Private"]}
+                onChange={(label) => handleVisibilityChange(label === "Public")}
+              />
             </div>
 
-            <button
+            <Button
+              body={showAdvanced ? "Hide Advanced Details" : "Advanced Details"}
               onClick={() => setShowAdvanced((v) => !v)}
-              className='w-fit flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-colors'>
-              {showAdvanced ? "Hide Advanced Details" : "Advanced Details"}
-            </button>
+              size='sm'
+              style='secondary'
+            />
 
             {showAdvanced && (
               <div className='rounded-xl border border-gray-200 overflow-hidden'>
@@ -273,17 +278,17 @@ export default function Details() {
                       <tr
                         key={key}
                         className='border-b border-gray-100 last:border-0'>
-                        <td className='px-4 py-2.5 text-gray-400 font-mono text-xs w-40 shrink-0 align-top'>
-                          {key}
+                        <td className='px-4 py-2.5 text-gray-400 font-mono w-40 shrink-0 align-top'>
+                          <h6>{key}</h6>
                         </td>
-                        <td className='px-4 py-2.5 text-gray-700 font-mono text-xs break-all'>
-                          {value === null || value === undefined ? (
-                            <span className='text-gray-300'>null</span>
-                          ) : typeof value === "boolean" ? (
-                            String(value)
-                          ) : (
-                            String(value)
-                          )}
+                        <td className='px-4 py-2.5 text-gray-700 font-mono break-all'>
+                          <h6>
+                            {value === null || value === undefined ? (
+                              <span className='text-gray-300'>null</span>
+                            ) : (
+                              String(value)
+                            )}
+                          </h6>
                         </td>
                       </tr>
                     ))}
