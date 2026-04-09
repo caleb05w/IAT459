@@ -13,50 +13,44 @@ export default function DashboardCard({
   return (
     <div
       onClick={onClick}
-      className={`flex flex-col rounded-[0.5rem] overflow-hidden w-[16rem] hover:cursor-pointer`}
-      style={{ boxShadow: "0 4px 24px 0 rgba(0,0,0,0.06)" }}
+      className="flex flex-col rounded-xl overflow-hidden w-[15rem] cursor-pointer hover:-translate-y-0.5 hover:shadow-md transition-all duration-150 border border-gray-100"
+      style={{ boxShadow: "0 2px 12px 0 rgba(0,0,0,0.05)" }}
     >
-      <div className="relative flex h-[16rem] p-4">
+      {/* Thumbnail */}
+      <div className="relative h-[13rem] bg-[#F6F6F6] flex items-center justify-center p-4">
         {hasUpdate && (
-          <div className="absolute top-3 left-3 px-2 py-0.5 bg-black text-white text-[10px] font-medium rounded z-10">
+          <p className="absolute top-3 left-3 px-2 py-0.5 bg-black text-white text-xs font-medium rounded-full z-10">
             Update Available
-          </div>
+          </p>
         )}
         {thumbnail ? (
           <img
             src={thumbnail}
             alt={header}
-            className="w-full h-full object-contain rounded-lg"
+            className="w-full h-full object-contain"
           />
         ) : (
-          <div className="text-gray-300 text-sm">No preview</div>
+          <p className="text-gray-300 text-sm">No preview</p>
         )}
         <button
           onClick={(e) => {e.stopPropagation(); onBookmark?.()}}
-          className="absolute top-3 right-3 p-1.5 rounded-md bg-white/80 hover:bg-white text-gray-400 hover:text-gray-700 transition-colors"
+          className="absolute top-3 right-3 p-1.5 rounded-lg bg-white/90 hover:bg-white text-gray-400 hover:text-gray-700 transition-colors shadow-sm"
         >
           {isBookmarked
-            ? <LuBookmark className="w-4 h-4 text-black" fill="currentColor" />
-            : <LuBookmark className="w-4 h-4" />}
+            ? <LuBookmark className="w-3.5 h-3.5 text-black" fill="currentColor" />
+            : <LuBookmark className="w-3.5 h-3.5" />}
         </button>
       </div>
-      <div className="px-4 pt-3 pb-2">
+
+      {/* Footer */}
+      <div className="px-4 py-3 bg-white flex flex-col gap-0.5">
         <h5 className="text-gray-900 truncate">{header}</h5>
-      </div>
-      <div
-        className="h-[1px] w-80 mx-auto"
-        style={{
-          background:
-            "repeating-linear-gradient(90deg, #E2E1DD 0, #E2E1DD 3px, transparent 3px, transparent 8px)",
-        }}
-      ></div>
-      <div className="px-4 pt-2 pb-3">
-        <h2 className="text-[12px] text-gray-400 truncate">
+        <h6 className="text-gray-400 truncate">
           {last_updated
             ? `Last edited ${new Date(last_updated).toLocaleDateString()}`
             : body}
-        </h2>
+        </h6>
       </div>
     </div>
-  );
+  )
 }

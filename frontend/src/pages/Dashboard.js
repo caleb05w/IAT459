@@ -7,16 +7,16 @@ import {LuLayoutGrid, LuList} from "react-icons/lu"
 import Button from "../components/Button"
 
 import Sidebar from "../components/Sidebar"
-import ProtectedNavbar from "../components/ProtectedNavbar"
 import DashboardCard from "../components/DashboardCard"
 import DashboardList from "../components/DashboardList"
 import SearchBar from "../components/SearchBar"
 import Dropdown from "../components/Dropdown"
+import PageTitle from "../components/PageTitle"
 
 export default function Dashboard() {
   const {slug} = useParams()
   const {user} = useContext(AuthContext)
-  const {activeTeam, components, toggleBookmark, isBookmarked} =
+  const {teams, activeTeam, setActiveTeam, components, toggleBookmark, isBookmarked} =
     useContext(DataContext)
   const navigate = useNavigate()
 
@@ -61,59 +61,57 @@ export default function Dashboard() {
 
   return (
     <div className='relative min-h-screen flex bg-white'>
-      <Sidebar activeTeam={activeTeam} username={username} />
+      <Sidebar activeTeam={activeTeam} setActiveTeam={setActiveTeam} teams={teams} username={username} />
       <main className='relative flex-1 flex flex-col min-w-0 overflow-hidden'>
-        <ProtectedNavbar
-          breadcrumbs={[activeTeam?.name, "Components"]}
-          onBreadcrumbClick={(i) => {
-            if (i === 0) navigate("/teams")
-          }}
-        />
+        <div className='flex-1 page-gutter-x page-gutter-y flex flex-col'>
+          <PageTitle
+            breadcrumbs={[activeTeam?.name, "Components"]}
+            onBreadcrumbClick={(i) => { if (i === 0) navigate("/teams") }}
+          />
 
-        <div className='flex-1 px-8 pt-6 pb-8 flex flex-col items-start'>
-          <div className='mb-[2rem]'>
-            <h3>Components</h3>
-          </div>
-
-          <div className='flex items-center gap-3 mb-[2rem] justify-between w-full'>
-            <div className='flex flex-row gap-[0.5rem]'>
+          <div className='flex items-center gap-3 mb-6 justify-between w-full'>
+            <div className='flex flex-row gap-2 flex-1'>
               <Dropdown
                 value={sortBy}
                 options={["Latest", "Oldest", "A-Z", "Updated"]}
                 onChange={setSortBy}
               />
-              <SearchBar value={searchQuery} onChange={setSearchQuery} />
+              <div className='flex-1'>
+                <SearchBar value={searchQuery} onChange={setSearchQuery} />
+              </div>
             </div>
-            <div className='flex flex-row gap-[0.5rem]'>
-              <Button
-                body={
-                  <span className='flex items-center gap-1.5'>
-                    <LuLayoutGrid className='w-3.5 h-3.5' />
-                    Grid
-                  </span>
-                }
-                size='sm'
-                style={viewMode === "grid" ? "tertiary" : "none"}
-                onClick={() => updateViewMode("grid")}
-              />
-              <Button
-                body={
-                  <span className='flex items-center gap-1.5'>
-                    <LuList className='w-3.5 h-3.5' />
-                    List
-                  </span>
-                }
-                size='sm'
-                style={viewMode === "list" ? "tertiary" : "none"}
-                onClick={() => updateViewMode("list")}
-              />
+            <div className='flex items-center gap-3'>
+<div className='flex gap-1 p-0.5 bg-gray-100 rounded-full'>
+                <Button
+                  body={
+                    <span className='flex items-center gap-1.5'>
+                      <LuLayoutGrid className='w-3.5 h-3.5' />
+                      Grid
+                    </span>
+                  }
+                  size='sm'
+                  style={viewMode === "grid" ? "tertiary" : "none"}
+                  onClick={() => updateViewMode("grid")}
+                />
+                <Button
+                  body={
+                    <span className='flex items-center gap-1.5'>
+                      <LuList className='w-3.5 h-3.5' />
+                      List
+                    </span>
+                  }
+                  size='sm'
+                  style={viewMode === "list" ? "tertiary" : "none"}
+                  onClick={() => updateViewMode("list")}
+                />
+              </div>
             </div>
           </div>
 
           {filteredComponents.length === 0 ? (
-            <div className='flex items-center justify-center h-48 text-gray-400 text-sm w-full'>
+            <p className='flex items-center justify-center h-48 text-gray-400 text-sm w-full'>
               No components in this team yet
-            </div>
+            </p>
           ) : viewMode === "grid" ? (
             <div className='flex flex-wrap gap-4'>
               {filteredComponents.map((component, i) => (
@@ -134,17 +132,12 @@ export default function Dashboard() {
               ))}
             </div>
           ) : (
-            <div className='w-full'>
-              <div className='grid grid-cols-[180px_1fr_220px] border-b border-gray-200 pb-2 mb-1'>
-                <span className='text-xs font-medium text-gray-500 uppercase tracking-wide'>
-                  Image
-                </span>
-                <span className='text-xs font-medium text-gray-500 uppercase tracking-wide'>
-                  Title
-                </span>
-                <span className='text-xs font-medium text-gray-500 uppercase tracking-wide'>
-                  Last Edited
-                </span>
+            <div className='w-full border border-gray-200 rounded-xl overflow-hidden'>
+              <div className='grid grid-cols-[180px_1fr_220px_40px] px-4 py-2.5 bg-gray-50 border-b border-gray-100'>
+                <h6 className='font-medium text-gray-500 uppercase tracking-wide'>Image</h6>
+                <h6 className='font-medium text-gray-500 uppercase tracking-wide'>Title</h6>
+                <h6 className='font-medium text-gray-500 uppercase tracking-wide'>Last Edited</h6>
+                <span />
               </div>
               {filteredComponents.map((component, i) => (
                 <DashboardList

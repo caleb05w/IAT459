@@ -4,7 +4,8 @@ import {AnimatePresence} from "framer-motion"
 import {AuthContext} from "../context/AuthContext"
 import {DataContext} from "../context/DataContext"
 
-import Topbar from "../components/Topbar"
+import Sidebar from "../components/Sidebar"
+import PageTitle from "../components/PageTitle"
 import Button from "../components/Button"
 import TeamCard from "../components/TeamCard"
 import TeamCardInput from "../components/TeamCardInput"
@@ -13,8 +14,8 @@ import {toSlug} from "../utils/toSlug"
 import Status from "../components/Status"
 
 export default function Teams() {
-  const {logout, user} = useContext(AuthContext)
-  const {teams, setActiveTeam, fetchComponents, createTeam} =
+  const {user} = useContext(AuthContext)
+  const {teams, activeTeam, setActiveTeam, fetchComponents, createTeam} =
     useContext(DataContext)
   const navigate = useNavigate()
 
@@ -26,10 +27,10 @@ export default function Teams() {
   const [cardColor, setCardColor] = useState("#d9272b")
 
   const COLORS = [
-    {label: "Red", hex: "#d9272b"},
-    {label: "Blue", hex: "#1a56db"},
-    {label: "Black", hex: "#111111"},
-    {label: "Green", hex: "#057a55"},
+    {label: "Red", hex: "#dc2626"},    // red-600
+    {label: "Blue", hex: "#2563eb"},   // blue-600
+    {label: "Black", hex: "#111827"},  // gray-900
+    {label: "Green", hex: "#047857"},  // emerald-700
   ]
 
   const username = user?.username || ""
@@ -37,11 +38,6 @@ export default function Teams() {
   const handleCreateTeam = async ({name, url}) => {
     const externalId = extractTeamId(url)
     return await createTeam({name, externalId})
-  }
-
-  const handleLogout = () => {
-    logout()
-    navigate("/login")
   }
 
   const handleSelectTeam = async (team) => {
@@ -60,20 +56,10 @@ export default function Teams() {
 
   return (
     <div className='relative min-h-screen flex bg-white'>
+      <Sidebar activeTeam={null} setActiveTeam={setActiveTeam} teams={teams} username={username} />
       <main className='relative flex-1 flex flex-col min-w-0 overflow-hidden'>
-        <Topbar logo={<h3>IAT459</h3>}>
-          <Button
-            body='Logout'
-            onClick={handleLogout}
-            size='sm'
-            style='secondary'
-          />
-        </Topbar>
-
-        <div className='flex-1 px-8 pt-6 pb-8 flex flex-col items-start'>
-          <div className='mb-[2rem]'>
-            <h3>Your Teams</h3>
-          </div>
+        <div className='flex-1 page-gutter-x page-gutter-y flex flex-col items-start'>
+          <PageTitle breadcrumbs={["Teams"]} />
 
           <div className='flex flex-row flex-wrap gap-4 items-center'>
             {teams.map((team) => (

@@ -33,7 +33,7 @@ export default function DashboardList({
             }
           : undefined
       }
-      className={`grid grid-cols-[180px_1fr_220px_40px] items-center py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors rounded-sm${onClick ? " cursor-pointer" : ""}`}
+      className={`grid grid-cols-[180px_1fr_220px_40px] items-center px-4 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors${onClick ? " cursor-pointer" : ""}`}
     >
       {/* Thumbnail */}
       <div className="w-[160px] h-[72px] bg-gray-100 rounded-md overflow-hidden flex items-center justify-center border border-gray-200">
@@ -44,21 +44,21 @@ export default function DashboardList({
             className="w-full h-full object-contain"
           />
         ) : (
-          <span className="text-gray-300 text-xs">No preview</span>
+          <p className="text-gray-300 text-xs">No preview</p>
         )}
       </div>
 
       {/* Name */}
-      <span className="text-sm text-gray-500 truncate pr-4">{name}</span>
+      <p className="text-sm text-gray-500 truncate pr-4">{name}</p>
 
       {/* Last edited */}
       <div className="flex items-center gap-2">
         <div className="w-7 h-7 rounded-full bg-amber-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
           {user ? user[0].toUpperCase() : "?"}
         </div>
-        <span className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500">
           {formatDateTime(last_updated)}
-        </span>
+        </p>
       </div>
 
       {/* Bookmark */}

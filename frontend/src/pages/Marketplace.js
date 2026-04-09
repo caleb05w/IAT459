@@ -1,8 +1,10 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { DataContext } from "../context/DataContext";
 import { LuLayoutGrid, LuList } from "react-icons/lu";
-import PublicNavbar from "../components/PublicNavbar";
+import Sidebar from "../components/Sidebar";
+import PageTitle from "../components/PageTitle";
 import SearchBar from "../components/SearchBar";
 import Dropdown from "../components/Dropdown";
 import Button from "../components/Button";
@@ -12,8 +14,11 @@ import DashboardList from "../components/DashboardList";
 const PORT = 5001;
 
 export default function Marketplace() {
-  const { token } = useContext(AuthContext);
+  const { token, user } = useContext(AuthContext);
+  // activeTeam needed so sidebar can navigate to the correct team routes when logged in
+  const { teams, activeTeam, setActiveTeam } = useContext(DataContext);
   const navigate = useNavigate();
+  const username = user?.username || "";
 
   const [components, setComponents] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -28,6 +33,7 @@ export default function Marketplace() {
     setViewMode(mode);
   };
 
+  // Fetch all public components — no auth required
   useEffect(() => {
     const fetchPublic = async () => {
       try {
@@ -46,6 +52,7 @@ export default function Marketplace() {
     fetchPublic();
   }, [token]);
 
+  // Re-filter and re-sort whenever search query, sort order, or component list changes
   useEffect(() => {
     let result = [...components];
     if (sortBy === "Latest") {
@@ -61,22 +68,21 @@ export default function Marketplace() {
   }, [searchQuery, components, sortBy]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <PublicNavbar />
-
-      <main className="flex-1 flex flex-col min-w-0 px-8 pt-6 pb-8">
-        <div className="mb-[2rem]">
-          <h3>Marketplace</h3>
-        </div>
-
-        <div className="flex items-center gap-3 mb-[2rem] justify-between w-full">
-          <div className="flex flex-row gap-[0.5rem]">
+    <div className="min-h-screen flex bg-white">
+      <Sidebar activeTeam={activeTeam} setActiveTeam={setActiveTeam} teams={teams} username={username} />
+      <main className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col page-gutter-x page-gutter-y">
+          <PageTitle breadcrumbs={["Marketplace"]} />
+          <div className="flex items-center gap-3 mb-6 justify-between w-full">
+          <div className="flex flex-row gap-[0.5rem] flex-1">
             <Dropdown
               value={sortBy}
               options={["Latest", "Oldest", "A-Z"]}
               onChange={setSortBy}
             />
-            <SearchBar value={searchQuery} onChange={setSearchQuery} />
+            <div className="flex-1">
+              <SearchBar value={searchQuery} onChange={setSearchQuery} />
+            </div>
           </div>
           <div className="flex flex-row gap-[0.5rem]">
             <Button
@@ -105,9 +111,9 @@ export default function Marketplace() {
         </div>
 
         {filteredComponents.length === 0 ? (
-          <div className="flex items-center justify-center h-48 text-gray-400 text-sm">
+          <p className="flex items-center justify-center h-48 text-gray-400 text-sm">
             No public components yet
-          </div>
+          </p>
         ) : viewMode === "grid" ? (
           <div className="flex flex-wrap gap-4">
             {filteredComponents.map((component, i) => (
@@ -128,15 +134,9 @@ export default function Marketplace() {
         ) : (
           <div className="w-full">
             <div className="grid grid-cols-[180px_1fr_220px] border-b border-gray-200 pb-2 mb-1">
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                Image
-              </span>
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                Title
-              </span>
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                Last Edited
-              </span>
+              <h6 className="font-medium text-gray-500 uppercase tracking-wide">Image</h6>
+              <h6 className="font-medium text-gray-500 uppercase tracking-wide">Title</h6>
+              <h6 className="font-medium text-gray-500 uppercase tracking-wide">Last Edited</h6>
             </div>
             {filteredComponents.map((component, i) => (
               <DashboardList
@@ -155,6 +155,7 @@ export default function Marketplace() {
             ))}
           </div>
         )}
+        </div>
       </main>
     </div>
   );

@@ -15,6 +15,7 @@ import Marketplace from "./pages/Marketplace"
 import TeamSettings from "./pages/TeamSettings"
 import Bookmarks from "./pages/Bookmarks"
 import UserProfile from "./pages/UserProfile"
+import Overview from "./pages/Overview"
 import {Agentation} from "agentation"
 import ProtectedRoute from "./ProtectedRoute"
 
@@ -44,6 +45,14 @@ function App() {
             <Route path='/marketplace' element={<Marketplace />} />
             {/* //render dashboard only if user has logged in (checked via protecter route.) */}
             <Route path='/' element={<Navigate to='/teams' replace />} />
+            <Route
+              path='/overview'
+              element={
+                <ProtectedRoute>
+                  <Overview />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path='/teams'
               element={

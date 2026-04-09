@@ -38,11 +38,12 @@ export function DataProvider({children}) {
       .catch((e) => console.warn("Error fetching user profile", e))
   }, [token])
 
-  const updateProfile = async ({fName, lName, figmaToken}) => {
+  const updateProfile = async ({fName, lName, figmaToken, username}) => {
     const updates = {}
     if (fName !== undefined) updates.fName = fName
     if (lName !== undefined) updates.lName = lName
     if (figmaToken !== undefined) updates.figmaToken = figmaToken
+    if (username !== undefined) updates.username = username
     try {
       const res = await fetch(`http://localhost:${PORT}/api/users/me`, {
         method: "PATCH",
@@ -199,6 +200,7 @@ export function DataProvider({children}) {
           const compData = await compRes.json()
           componentsCache.current[activeTeam._id] = compData
           setComponents(compData)
+          return {components: compData}
         } else {
           const errData = await compRes.json()
           console.log("sync error data:", errData)

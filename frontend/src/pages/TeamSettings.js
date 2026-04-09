@@ -3,13 +3,14 @@ import {useNavigate} from "react-router-dom"
 import {AuthContext} from "../context/AuthContext"
 import {DataContext} from "../context/DataContext"
 import Sidebar from "../components/Sidebar"
-import ProtectedNavbar from "../components/ProtectedNavbar"
 import SearchBar from "../components/SearchBar"
 import Button from "../components/Button"
 import TextInput from "../components/TextInput"
 import Dropdown from "../components/Dropdown"
 import SettingsRow from "../components/SettingsRow"
+import PageTitle from "../components/PageTitle"
 import {extractTeamId} from "../utils/extractTeamId"
+import {toSlug} from "../utils/toSlug"
 
 const PORT = 5001
 const ROLES = ["Admin", "Collaborator"]
@@ -199,23 +200,23 @@ export default function TeamSettings() {
   return (
     <div className='min-h-screen flex bg-white'>
       <Sidebar
-        activeNav='Team Settings'
-        setActiveNav={() => {}}
         activeTeam={activeTeam}
         setActiveTeam={setActiveTeam}
         teams={teams}
         username={username}
-        setShowCreateTeam={() => navigate("/teams")}
       />
 
       <main className='flex-1 flex flex-col min-w-0'>
-        <ProtectedNavbar
-          breadcrumbs={[activeTeam?.name, "Settings"]}
-          onBreadcrumbClick={(i) => { if (i === 0) navigate(`/team/${activeTeam._id}`) }}
-        />
+        {/* Page title */}
+        <div className='page-gutter-x pt-6'>
+          <PageTitle
+            breadcrumbs={[activeTeam?.name, "Settings"]}
+            onBreadcrumbClick={(i) => { if (i === 0) navigate(`/team/${toSlug(activeTeam.name)}`) }}
+          />
+        </div>
 
         {/* Tabs */}
-        <div className='px-8 border-b border-gray-100'>
+        <div className='page-gutter-x border-b border-gray-100'>
           <div className='flex gap-6'>
             {TABS.map((tab) => (
               <button
@@ -239,7 +240,7 @@ export default function TeamSettings() {
 
         {/* Settings Tab */}
         {activeTab === "Settings" && (
-          <div className='flex-1 px-8 pt-8 pb-10 w-full flex flex-col'>
+          <div className='flex-1 page-gutter-x page-gutter-y w-full flex flex-col'>
             {!isCollaborator && (
               <>
                 <p className='text-sm text-gray-400 mb-4'>Team</p>
@@ -309,8 +310,9 @@ export default function TeamSettings() {
 
         {/* Members Tab */}
         {activeTab === "Members" && (
-          <div className='flex-1 px-8 pt-6 pb-10 w-full'>
-            <div className='mb-6'>
+          <div className='flex-1 page-gutter-x page-gutter-y w-full'>
+            <p className='text-sm text-gray-400 mb-4'>Members</p>
+            <div className='flex flex-col gap-3 mb-6'>
               <SearchBar value={memberSearch} onChange={setMemberSearch} />
             </div>
 
@@ -331,9 +333,9 @@ export default function TeamSettings() {
 
             <div className='border border-gray-200 rounded-xl'>
               <div className='grid grid-cols-[1fr_1fr_160px] px-4 py-2.5 border-b border-gray-100 bg-gray-50 rounded-t-xl'>
-                <span className='text-xs font-medium text-gray-500'>Name</span>
-                <span className='text-xs font-medium text-gray-500'>Username</span>
-                <span className='text-xs font-medium text-gray-500'>Role</span>
+                <h6 className='font-medium text-gray-500'>Name</h6>
+                <h6 className='font-medium text-gray-500'>Username</h6>
+                <h6 className='font-medium text-gray-500'>Role</h6>
               </div>
 
               {filteredMembers.length === 0 ? (
@@ -372,9 +374,9 @@ export default function TeamSettings() {
                             onChange={(r) => handleRoleChange(member._id, r)}
                           />
                         ) : (
-                          <span className='px-3 py-1.5 border border-gray-200 rounded-full text-sm text-gray-400 bg-gray-50'>
+                          <p className='px-3 py-1.5 border border-gray-200 rounded-full text-sm text-gray-400 bg-gray-50'>
                             {member.role}
-                          </span>
+                          </p>
                         )}
                       </div>
                     </div>
@@ -402,7 +404,7 @@ export default function TeamSettings() {
             />
 
             <div className='flex flex-col gap-1.5'>
-              <p className='text-xs font-medium text-gray-500'>Role</p>
+              <h6 className='font-medium text-gray-500'>Role</h6>
               <Dropdown
                 value={newRole}
                 options={["Admin", "Collaborator"]}

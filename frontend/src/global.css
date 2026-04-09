@@ -54,3 +54,15 @@ h6 {
   line-height: 140%;
   letter-spacing: -0.48px;
 } */
+
+/* Horizontal page padding — applied to all main content areas */
+.page-gutter-x {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+/* Vertical page padding — applied to all main content areas */
+.page-gutter-y {
+  padding-top: 1.5rem;
+  padding-bottom: 2rem;
+}

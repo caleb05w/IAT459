@@ -64,20 +64,20 @@ export default function TeamCardInput({
                 className="flex flex-[1_0_0] flex-col items-start min-h-px min-w-px mr-[-0.2px] pb-[0.2px]"
               >
                 <div className="border-[0.2px] border-solid border-white flex items-center justify-center mb-[-0.2px] px-[9.6px] py-[4px] shrink-0 w-full">
-                  <p
-                    className="text-white font-bold leading-normal text-[10px] tracking-[-0.12px] whitespace-nowrap"
+                  <h6
+                    className="text-white font-bold leading-normal tracking-[-0.12px] whitespace-nowrap"
                     style={{ fontFamily: "'JetBrains Mono', monospace" }}
                   >
                     {col.label}
-                  </p>
+                  </h6>
                 </div>
                 <div className="border-[0.2px] border-solid border-white flex items-center justify-center mb-[-0.2px] px-[9.6px] py-[4px] shrink-0 w-full">
-                  <p
-                    className="text-white font-normal leading-normal text-[10px] tracking-[-0.16px] whitespace-nowrap"
+                  <h6
+                    className="text-white leading-normal tracking-[-0.16px] whitespace-nowrap"
                     style={{ fontFamily: "'JetBrains Mono', monospace" }}
                   >
                     {col.value}
-                  </p>
+                  </h6>
                 </div>
               </div>
             ))}

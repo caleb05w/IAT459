@@ -67,10 +67,10 @@ export default function Login() {
           />
           {/* Header */}
           <div className='flex flex-col gap-[0.8rem]'>
-            <h1 className='text-[24px] font-medium text-black leading-none'>
+            <h1 className='font-medium text-black leading-none'>
               Login
             </h1>
-            <p className='text-[16px] text-secondary'>
+            <p className='text-secondary'>
               Let's get you set up in just a few steps.
             </p>
           </div>

@@ -18,7 +18,7 @@ export default function Status({ body, type = "error", onClose }) {
     <div
       className={`fixed top-4 left-1/2 -translate-x-1/2 w-[448px] flex items-center justify-between gap-4 border px-4 py-3 z-50 ${styles[type]}`}
     >
-      <p className="text-[14px]">{body}</p>
+      <p>{body}</p>
       <button
         onClick={onClose}
         className={`transition-colors text-[18px] leading-none ${closeStyles[type]}`}
