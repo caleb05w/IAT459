@@ -1,30 +1,30 @@
-import "./App.css"
+import "./App.css";
 //to use routes, we will need to set them up here through react-router-dom
 import {
   Navigate,
   Route,
   BrowserRouter as Router,
   Routes,
-} from "react-router-dom"
-import Login from "./pages/Login"
-import Register from "./pages/Register"
-import Dashboard from "./pages/Dashboard"
-import Teams from "./pages/Teams"
-import Details from "./pages/Details"
-import Marketplace from "./pages/Marketplace"
-import TeamSettings from "./pages/TeamSettings"
-import Bookmarks from "./pages/Bookmarks"
-import UserProfile from "./pages/UserProfile"
-import Overview from "./pages/Overview"
-import {Agentation} from "agentation"
-import ProtectedRoute from "./ProtectedRoute"
+} from "react-router-dom";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import Teams from "./pages/Teams";
+import Details from "./pages/Details";
+import Marketplace from "./pages/Marketplace";
+import TeamSettings from "./pages/TeamSettings";
+import Bookmarks from "./pages/Bookmarks";
+import UserProfile from "./pages/UserProfile";
+import Overview from "./pages/Overview";
+import { Agentation } from "agentation";
+import ProtectedRoute from "./ProtectedRoute";
 
 //testing
-import Playground from "./pages/Playground"
+import Playground from "./pages/Playground";
 
 //need to make auth provider globally available!
-import {AuthProvider} from "./context/AuthContext"
-import {DataProvider} from "./context/DataContext"
+import { AuthProvider } from "./context/AuthContext";
+import { DataProvider } from "./context/DataContext";
 
 //TODO
 //Dashboard View
@@ -39,14 +39,14 @@ function App() {
       <Router>
         <DataProvider>
           <Routes>
-            <Route path='/login' element={<Login />} />
-            <Route path='/register' element={<Register />} />
-            <Route path='/playground' element={<Playground />} />
-            <Route path='/marketplace' element={<Marketplace />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/playground" element={<Playground />} />
+            <Route path="/marketplace" element={<Marketplace />} />
             {/* //render dashboard only if user has logged in (checked via protecter route.) */}
-            <Route path='/' element={<Navigate to='/teams' replace />} />
+            <Route path="/" element={<Navigate to="/teams" replace />} />
             <Route
-              path='/overview'
+              path="/overview"
               element={
                 <ProtectedRoute>
                   <Overview />
@@ -54,7 +54,7 @@ function App() {
               }
             />
             <Route
-              path='/teams'
+              path="/teams"
               element={
                 <ProtectedRoute>
                   <Teams />
@@ -62,7 +62,7 @@ function App() {
               }
             />
             <Route
-              path='/team/:slug'
+              path="/team/:slug"
               element={
                 <ProtectedRoute>
                   <Dashboard />
@@ -70,7 +70,7 @@ function App() {
               }
             />
             <Route
-              path='/details'
+              path="/details"
               element={
                 <ProtectedRoute>
                   <Details />
@@ -78,7 +78,7 @@ function App() {
               }
             />
             <Route
-              path='/team/:slug/details'
+              path="/team/:slug/details"
               element={
                 <ProtectedRoute>
                   <Details />
@@ -87,7 +87,7 @@ function App() {
             />
 
             <Route
-              path='/bookmarks'
+              path="/bookmarks"
               element={
                 <ProtectedRoute>
                   <Bookmarks />
@@ -95,7 +95,7 @@ function App() {
               }
             />
             <Route
-              path='/team/:slug/settings'
+              path="/team/:slug/settings"
               element={
                 <ProtectedRoute>
                   <TeamSettings />
@@ -103,7 +103,7 @@ function App() {
               }
             />
             <Route
-              path='/profile'
+              path="/profile"
               element={
                 <ProtectedRoute>
                   <UserProfile />
@@ -113,9 +113,10 @@ function App() {
           </Routes>
         </DataProvider>
       </Router>
-      {process.env.NODE_ENV === "development" && <Agentation />}
+      {process.env.NODE_ENV === "development"}
+      {/* && <Agentation /> */}
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+export default App;

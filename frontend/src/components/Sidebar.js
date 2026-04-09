@@ -114,7 +114,7 @@ export default function Sidebar({
       </div> */}
 
         {/* User footer */}
-        <button
+        {token && <button
           onClick={() => navigate("/profile")}
           className="mx-3 mb-3 px-3 py-2.5 rounded-xl border border-gray-100 flex items-center gap-3 w-[calc(100%-1.5rem)] hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer group"
         >
@@ -132,7 +132,7 @@ export default function Sidebar({
             <h6 className="text-gray-400">{currentUserRole || "..."}</h6>
           </div>
           <LuChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 transition-colors shrink-0" />
-        </button>
+        </button>}
       </aside>
     </>
   );

@@ -49,7 +49,9 @@ export default function Overview() {
     }
   }
 
-  const recentComponents = components.slice(0, 5)
+  const recentComponents = [...components]
+    .sort((a, b) => new Date(b.curr_last_updated) - new Date(a.curr_last_updated))
+    .slice(0, 5)
 
   return (
     <div className="min-h-screen flex bg-white">

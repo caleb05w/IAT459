@@ -1,22 +1,22 @@
-import {useContext, useEffect, useState} from "react"
-import {useNavigate} from "react-router-dom"
-import {AuthContext} from "../context/AuthContext"
-import {DataContext} from "../context/DataContext"
-import Sidebar from "../components/Sidebar"
-import SearchBar from "../components/SearchBar"
-import Button from "../components/Button"
-import TextInput from "../components/TextInput"
-import Dropdown from "../components/Dropdown"
-import SettingsRow from "../components/SettingsRow"
-import PageTitle from "../components/PageTitle"
-import {extractTeamId} from "../utils/extractTeamId"
-import {toSlug} from "../utils/toSlug"
+import { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import { DataContext } from "../context/DataContext";
+import Sidebar from "../components/Sidebar";
+import SearchBar from "../components/SearchBar";
+import Button from "../components/Button";
+import TextInput from "../components/TextInput";
+import Dropdown from "../components/Dropdown";
+import SettingsRow from "../components/SettingsRow";
+import PageTitle from "../components/PageTitle";
+import { extractTeamId } from "../utils/extractTeamId";
+import { toSlug } from "../utils/toSlug";
 
-const PORT = 5001
-const ROLES = ["Admin", "Collaborator"]
+const PORT = 5001;
+const ROLES = ["Admin", "Collaborator"];
 
 export default function TeamSettings() {
-  const {token} = useContext(AuthContext)
+  const { token } = useContext(AuthContext);
   const {
     teams,
     activeTeam,
@@ -25,64 +25,64 @@ export default function TeamSettings() {
     createTeam,
     deleteTeam,
     currentUserRole,
-  } = useContext(DataContext)
-  const username = useContext(AuthContext).user?.username || ""
-  const navigate = useNavigate()
+  } = useContext(DataContext);
+  const username = useContext(AuthContext).user?.username || "";
+  const navigate = useNavigate();
 
-  const handleCreateTeam = async ({name, url}) => {
-    const externalId = extractTeamId(url)
-    await createTeam({name, externalId})
-  }
+  const handleCreateTeam = async ({ name, url }) => {
+    const externalId = extractTeamId(url);
+    await createTeam({ name, externalId });
+  };
 
-  const [activeTab, setActiveTab] = useState("Settings")
-  const [teamName, setTeamName] = useState("")
-  const [teamNameLoading, setTeamNameLoading] = useState(false)
-  const [visibility, setVisibility] = useState("Private")
-  const [visibilityLoading, setVisibilityLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState("Settings");
+  const [teamName, setTeamName] = useState("");
+  const [teamNameLoading, setTeamNameLoading] = useState(false);
+  const [visibility, setVisibility] = useState("Private");
+  const [visibilityLoading, setVisibilityLoading] = useState(false);
 
   useEffect(() => {
-    setTeamName(activeTeam?.name ?? "")
-  }, [activeTeam?._id])
+    setTeamName(activeTeam?.name ?? "");
+  }, [activeTeam?._id]);
 
   const handleRenameTeam = async () => {
-    if (!teamName.trim() || teamName.trim() === activeTeam?.name) return
-    setTeamNameLoading(true)
-    await renameTeam(activeTeam._id, teamName.trim())
-    setTeamNameLoading(false)
-  }
+    if (!teamName.trim() || teamName.trim() === activeTeam?.name) return;
+    setTeamNameLoading(true);
+    await renameTeam(activeTeam._id, teamName.trim());
+    setTeamNameLoading(false);
+  };
 
-  const [members, setMembers] = useState([])
-  const [memberSearch, setMemberSearch] = useState("")
+  const [members, setMembers] = useState([]);
+  const [memberSearch, setMemberSearch] = useState("");
 
-  const [showAddMember, setShowAddMember] = useState(false)
-  const [newUsername, setNewUsername] = useState("")
-  const [newRole, setNewRole] = useState("Collaborator")
-  const [addMemberLoading, setAddMemberLoading] = useState(false)
-  const [addMemberError, setAddMemberError] = useState("")
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
+  const [newRole, setNewRole] = useState("Collaborator");
+  const [addMemberLoading, setAddMemberLoading] = useState(false);
+  const [addMemberError, setAddMemberError] = useState("");
 
   useEffect(() => {
-    if (!activeTeam || activeTab !== "Members") return
+    if (!activeTeam || activeTab !== "Members") return;
     fetch(`http://localhost:${PORT}/api/teams/${activeTeam._id}/members`, {
-      headers: {Authorization: `Bearer ${token}`},
+      headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
       .then((data) => setMembers(Array.isArray(data) ? data : []))
-      .catch((e) => console.warn("Error fetching members", e))
-  }, [activeTeam, activeTab, token])
+      .catch((e) => console.warn("Error fetching members", e));
+  }, [activeTeam, activeTab, token]);
 
   const filteredMembers = members.filter((m) => {
-    const q = memberSearch.toLowerCase()
+    const q = memberSearch.toLowerCase();
     return (
       m.username?.toLowerCase().includes(q) ||
       m.fName?.toLowerCase().includes(q) ||
       m.lName?.toLowerCase().includes(q)
-    )
-  })
+    );
+  });
 
   const handleAddMember = async () => {
-    if (!newUsername.trim()) return
-    setAddMemberLoading(true)
-    setAddMemberError("")
+    if (!newUsername.trim()) return;
+    setAddMemberLoading(true);
+    setAddMemberError("");
     try {
       const res = await fetch(
         `http://localhost:${PORT}/api/teams/${activeTeam._id}/members`,
@@ -92,23 +92,23 @@ export default function TeamSettings() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({username: newUsername.trim(), role: newRole}),
+          body: JSON.stringify({ username: newUsername.trim(), role: newRole }),
         },
-      )
-      const data = await res.json()
+      );
+      const data = await res.json();
       if (res.ok) {
-        setMembers(data)
-        setShowAddMember(false)
-        setNewUsername("")
-        setNewRole("Collaborator")
+        setMembers(data);
+        setShowAddMember(false);
+        setNewUsername("");
+        setNewRole("Collaborator");
       } else {
-        setAddMemberError(data.message ?? "Failed to add member")
+        setAddMemberError(data.message ?? "Failed to add member");
       }
     } catch (e) {
-      setAddMemberError("Something went wrong")
+      setAddMemberError("Something went wrong");
     }
-    setAddMemberLoading(false)
-  }
+    setAddMemberLoading(false);
+  };
 
   const handleRoleChange = async (memberId, role) => {
     try {
@@ -120,19 +120,19 @@ export default function TeamSettings() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({role}),
+          body: JSON.stringify({ role }),
         },
-      )
-      const data = await res.json()
-      if (res.ok) setMembers(data)
-      else console.warn("Failed to change role:", data.message)
+      );
+      const data = await res.json();
+      if (res.ok) setMembers(data);
+      else console.warn("Failed to change role:", data.message);
     } catch (e) {
-      console.warn("Error changing role", e)
+      console.warn("Error changing role", e);
     }
-  }
+  };
 
   const handleVisibilityChange = async (value) => {
-    setVisibilityLoading(true)
+    setVisibilityLoading(true);
     try {
       const res = await fetch(
         `http://localhost:${PORT}/api/teams/${activeTeam._id}/visibility`,
@@ -142,16 +142,16 @@ export default function TeamSettings() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({public: value === "Public"}),
+          body: JSON.stringify({ public: value === "Public" }),
         },
-      )
-      if (res.ok) setVisibility(value)
-      else console.warn("Failed to update team visibility")
+      );
+      if (res.ok) setVisibility(value);
+      else console.warn("Failed to update team visibility");
     } catch (e) {
-      console.warn("Error updating team visibility", e)
+      console.warn("Error updating team visibility", e);
     }
-    setVisibilityLoading(false)
-  }
+    setVisibilityLoading(false);
+  };
 
   const handleRevertToPrivate = async () => {
     try {
@@ -159,46 +159,47 @@ export default function TeamSettings() {
         `http://localhost:${PORT}/api/teams/${activeTeam._id}/revert-visibility`,
         {
           method: "POST",
-          headers: {Authorization: `Bearer ${token}`},
+          headers: { Authorization: `Bearer ${token}` },
         },
-      )
+      );
     } catch (e) {
-      console.warn("Error reverting components", e)
+      console.warn("Error reverting components", e);
     }
-  }
+  };
 
   const handleDeleteTeam = async () => {
-    if (!window.confirm("Are you sure? This cannot be undone.")) return
-    const ok = await deleteTeam(activeTeam._id)
-    if (ok) navigate("/")
-  }
+    if (!window.confirm("Are you sure? This cannot be undone.")) return;
+    const ok = await deleteTeam(activeTeam._id);
+    if (ok) navigate("/");
+  };
 
   const handleLeaveTeam = async () => {
-    if (!window.confirm("Are you sure you want to leave this team?")) return
+    if (!window.confirm("Are you sure you want to leave this team?")) return;
     try {
       const res = await fetch(
         `http://localhost:${PORT}/api/teams/${activeTeam._id}/leave`,
         {
           method: "POST",
-          headers: {Authorization: `Bearer ${token}`},
+          headers: { Authorization: `Bearer ${token}` },
         },
-      )
-      if (res.ok) navigate("/teams")
+      );
+      if (res.ok) navigate("/teams");
       else {
-        const data = await res.json()
-        console.warn("Failed to leave team:", data.message)
+        const data = await res.json();
+        console.warn("Failed to leave team:", data.message);
       }
     } catch (e) {
-      console.warn("Error leaving team", e)
+      console.warn("Error leaving team", e);
     }
-  }
+  };
 
-  const isCollaborator = currentUserRole === "Collaborator"
-  const TABS = isCollaborator ? ["Settings"] : ["Settings", "Members"]
-  const assignableRoles = currentUserRole === "Owner" ? ROLES : ["Admin", "Collaborator"]
+  const isCollaborator = currentUserRole === "Collaborator";
+  const TABS = isCollaborator ? ["Settings"] : ["Settings", "Members"];
+  const assignableRoles =
+    currentUserRole === "Owner" ? ROLES : ["Admin", "Collaborator"];
 
   return (
-    <div className='min-h-screen flex bg-white'>
+    <div className="min-h-screen flex bg-white">
       <Sidebar
         activeTeam={activeTeam}
         setActiveTeam={setActiveTeam}
@@ -206,18 +207,20 @@ export default function TeamSettings() {
         username={username}
       />
 
-      <main className='flex-1 flex flex-col min-w-0'>
+      <main className="flex-1 flex flex-col min-w-0">
         {/* Page title */}
-        <div className='page-gutter-x pt-6'>
+        <div className="page-gutter-x pt-6">
           <PageTitle
             breadcrumbs={[activeTeam?.name, "Settings"]}
-            onBreadcrumbClick={(i) => { if (i === 0) navigate(`/team/${toSlug(activeTeam.name)}`) }}
+            onBreadcrumbClick={(i) => {
+              if (i === 0) navigate(`/team/${toSlug(activeTeam.name)}`);
+            }}
           />
         </div>
 
         {/* Tabs */}
-        <div className='page-gutter-x border-b border-gray-100'>
-          <div className='flex gap-6'>
+        <div className="page-gutter-x border-b border-gray-100">
+          <div className="flex gap-6">
             {TABS.map((tab) => (
               <button
                 key={tab}
@@ -226,10 +229,11 @@ export default function TeamSettings() {
                   activeTab === tab
                     ? "border-gray-900 text-gray-900 font-medium"
                     : "border-transparent text-gray-400 hover:text-gray-600"
-                }`}>
+                }`}
+              >
                 {tab}
                 {tab === "Members" && members.length > 0 && (
-                  <span className='ml-1.5 px-1.5 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-full'>
+                  <span className="ml-1.5 px-1.5 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-full">
                     {members.length}
                   </span>
                 )}
@@ -240,13 +244,15 @@ export default function TeamSettings() {
 
         {/* Settings Tab */}
         {activeTab === "Settings" && (
-          <div className='flex-1 page-gutter-x page-gutter-y w-full flex flex-col'>
+          <div className="flex-1 page-gutter-x page-gutter-y w-full flex flex-col">
             {!isCollaborator && (
               <>
-                <p className='text-sm text-gray-400 mb-4'>Team</p>
-                <div className='flex flex-col gap-3 mb-8'>
+                <p className="text-sm text-gray-400 mb-4">Team</p>
+                <div className="flex flex-col gap-3 mb-8">
                   <div className="flex flex-col gap-2">
-                    <p className="text-sm font-medium text-gray-900">Team Name</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      Team Name
+                    </p>
                     <TextInput
                       value={teamName}
                       onChange={(e) => setTeamName(e.target.value)}
@@ -256,7 +262,8 @@ export default function TeamSettings() {
 
                   <SettingsRow
                     title="Marketplace Visibility (WIP)"
-                    description="All components are hidden from the Marketplace">
+                    description="All components are hidden from the Marketplace"
+                  >
                     <Dropdown
                       value={visibilityLoading ? "Saving…" : visibility}
                       options={["Public", "Private"]}
@@ -275,8 +282,8 @@ export default function TeamSettings() {
               </>
             )}
 
-            <p className='text-sm text-gray-400 mb-4'>Danger Zone</p>
-            <div className='flex flex-col gap-3 mb-8'>
+            <p className="text-sm text-gray-400 mb-4">Danger Zone</p>
+            <div className="flex flex-col gap-3 mb-8">
               <SettingsRow
                 title="Leave Team"
                 description="You will lose access to this team and its components."
@@ -296,7 +303,7 @@ export default function TeamSettings() {
             </div>
 
             {!isCollaborator && (
-              <div className='mt-auto pt-4'>
+              <div className="mt-auto pt-4">
                 <Button
                   body={teamNameLoading ? "Saving…" : "Save"}
                   size="sm"
@@ -310,14 +317,14 @@ export default function TeamSettings() {
 
         {/* Members Tab */}
         {activeTab === "Members" && (
-          <div className='flex-1 page-gutter-x page-gutter-y w-full'>
-            <p className='text-sm text-gray-400 mb-4'>Members</p>
-            <div className='flex flex-col gap-3 mb-6'>
+          <div className="flex-1 page-gutter-x page-gutter-y w-full">
+            <p className="text-sm text-gray-400 mb-4">Members</p>
+            <div className="flex flex-col gap-3 mb-6">
               <SearchBar value={memberSearch} onChange={setMemberSearch} />
             </div>
 
-            <div className='flex items-center justify-between mb-3'>
-              <p className='text-sm text-gray-500'>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm text-gray-500">
                 Team Members ({filteredMembers.length})
               </p>
               <Button
@@ -325,46 +332,50 @@ export default function TeamSettings() {
                 size="sm"
                 style="secondary"
                 onClick={() => {
-                  setAddMemberError("")
-                  setShowAddMember(true)
+                  setAddMemberError("");
+                  setShowAddMember(true);
                 }}
               />
             </div>
 
-            <div className='border border-gray-200 rounded-xl'>
-              <div className='grid grid-cols-[1fr_1fr_160px] px-4 py-2.5 border-b border-gray-100 bg-gray-50 rounded-t-xl'>
-                <h6 className='font-medium text-gray-500'>Name</h6>
-                <h6 className='font-medium text-gray-500'>Username</h6>
-                <h6 className='font-medium text-gray-500'>Role</h6>
+            <div className="border border-gray-200 rounded-xl">
+              <div className="grid grid-cols-[1fr_1fr_160px] px-4 py-2.5 border-b border-gray-100 bg-gray-50 rounded-t-xl">
+                <h6 className="font-medium text-gray-500">Name</h6>
+                <h6 className="font-medium text-gray-500">Username</h6>
+                <h6 className="font-medium text-gray-500">Role</h6>
               </div>
 
               {filteredMembers.length === 0 ? (
-                <div className='px-4 py-8 text-center text-sm text-gray-400'>
+                <div className="px-4 py-8 text-center text-sm text-gray-400">
                   No members found
                 </div>
               ) : (
                 filteredMembers.map((member) => {
-                  const isOwner = member.role === "Owner"
+                  const isOwner = member.role === "Owner";
                   const canChange =
                     !isOwner &&
-                    (currentUserRole === "Owner" || currentUserRole === "Admin")
+                    (currentUserRole === "Owner" ||
+                      currentUserRole === "Admin");
 
                   return (
                     <div
                       key={member._id}
-                      className='grid grid-cols-[1fr_1fr_160px] px-4 py-3 border-b border-gray-100 last:border-0 last:rounded-b-xl items-center'>
-                      <div className='flex items-center gap-3'>
-                        <div className='w-7 h-7 rounded-full bg-amber-600 flex items-center justify-center text-white text-xs font-bold shrink-0'>
+                      className="grid grid-cols-[1fr_1fr_160px] px-4 py-3 border-b border-gray-100 last:border-0 last:rounded-b-xl items-center"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-7 h-7 rounded-full bg-amber-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
                           {member.username?.[0]?.toUpperCase() ?? "?"}
                         </div>
-                        <span className='text-sm text-gray-800'>
+                        <span className="text-sm text-gray-800">
                           {member.fName && member.lName
                             ? `${member.fName} ${member.lName}`
                             : member.username}
                         </span>
                       </div>
 
-                      <span className='text-sm text-gray-500'>{member.username}</span>
+                      <span className="text-sm text-gray-500">
+                        {member.username}
+                      </span>
 
                       <div>
                         {canChange ? (
@@ -374,13 +385,13 @@ export default function TeamSettings() {
                             onChange={(r) => handleRoleChange(member._id, r)}
                           />
                         ) : (
-                          <p className='px-3 py-1.5 border border-gray-200 rounded-full text-sm text-gray-400 bg-gray-50'>
+                          <p className="px-3 py-1.5 border border-gray-200 rounded-full text-sm text-gray-400 bg-gray-50">
                             {member.role}
                           </p>
                         )}
                       </div>
                     </div>
-                  )
+                  );
                 })
               )}
             </div>
@@ -391,10 +402,13 @@ export default function TeamSettings() {
       {/* Add Member Modal */}
       {showAddMember && (
         <div
-          className='fixed inset-0 bg-black/30 flex items-center justify-center z-50'
-          onClick={(e) => e.target === e.currentTarget && setShowAddMember(false)}>
-          <div className='bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4'>
-            <h2 className='text-base font-semibold text-gray-900'>Add Member</h2>
+          className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
+          onClick={(e) =>
+            e.target === e.currentTarget && setShowAddMember(false)
+          }
+        >
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4">
+            <h2 className="text-base text-gray-900">Add Member</h2>
 
             <TextInput
               body="Username"
@@ -403,8 +417,8 @@ export default function TeamSettings() {
               placeholder="Enter username…"
             />
 
-            <div className='flex flex-col gap-1.5'>
-              <h6 className='font-medium text-gray-500'>Role</h6>
+            <div className="flex flex-col gap-1.5">
+              <h6 className="font-medium text-gray-500">Role</h6>
               <Dropdown
                 value={newRole}
                 options={["Admin", "Collaborator"]}
@@ -413,10 +427,10 @@ export default function TeamSettings() {
             </div>
 
             {addMemberError && (
-              <p className='text-xs text-red-500'>{addMemberError}</p>
+              <p className="text-xs text-red-500">{addMemberError}</p>
             )}
 
-            <div className='flex gap-2 pt-1'>
+            <div className="flex gap-2 pt-1">
               <Button
                 body="Cancel"
                 size="sm"
@@ -434,5 +448,5 @@ export default function TeamSettings() {
         </div>
       )}
     </div>
-  )
+  );
 }

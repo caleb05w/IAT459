@@ -7,6 +7,7 @@ import Button from "../components/Button";
 import Dropdown from "../components/Dropdown";
 import PageTitle from "../components/PageTitle";
 import Table from "../components/Table";
+import Status from "../components/Status";
 
 const PORT = 5001;
 
@@ -24,7 +25,7 @@ export default function Details() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const { token } = useContext(AuthContext);
-  const { teams, activeTeam, setActiveTeam } = useContext(DataContext);
+  const { teams, activeTeam, setActiveTeam } = useContext(DataContext)
 
   const { component } = state || {};
   const username = useContext(AuthContext).user?.username || "";
@@ -32,8 +33,12 @@ export default function Details() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isPublic, setIsPublic] = useState(component?.public ?? false);
   const [visibilityLoading, setVisibilityLoading] = useState(false);
+  const [visibilityStatus, setVisibilityStatus] = useState(null); // null | "success" | "error"
   const [hasUpdate, setHasUpdate] = useState(component?.hasUpdate ?? false);
   const [liveComponent, setLiveComponent] = useState(component);
+
+  // True if the current user belongs to the component's team, regardless of how they got here.
+  const isMember = teams.some((t) => t._id === liveComponent?.team);
   const [acceptLoading, setAcceptLoading] = useState(false);
 
   const handleVisibilityChange = async (value) => {
@@ -51,10 +56,14 @@ export default function Details() {
           body: JSON.stringify({ public: value }),
         },
       );
-      if (res.ok) setIsPublic(value);
-      else console.warn("Failed to update visibility");
+      if (res.ok) {
+        setIsPublic(value);
+        setVisibilityStatus("success");
+      } else {
+        setVisibilityStatus("error");
+      }
     } catch (e) {
-      console.warn("Error updating visibility", e);
+      setVisibilityStatus("error");
     }
     setVisibilityLoading(false);
   };
@@ -96,7 +105,7 @@ export default function Details() {
       <main className="flex-1 flex flex-col min-w-0">
         <div className="flex-1 page-gutter-x page-gutter-y flex flex-col gap-6">
           <PageTitle
-            breadcrumbs={[activeTeam?.name, "Components", liveComponent.name]}
+            breadcrumbs={isMember ? [activeTeam?.name, "Components", liveComponent.name] : [liveComponent.name]}
             onBreadcrumbClick={(i) => {
               if (i === 0 || i === 1) navigate(`/team/${activeTeam._id}`);
             }}
@@ -226,7 +235,7 @@ export default function Details() {
                 </p>
               </div>
 
-              <div>
+              {isMember && <div>
                 <h6 className="uppercase tracking-wide text-gray-400 mb-2">
                   Visibility
                 </h6>
@@ -243,15 +252,15 @@ export default function Details() {
                     handleVisibilityChange(label === "Public")
                   }
                 />
-              </div>
+              </div>}
             </div>
 
-            <Button
+            {isMember && <Button
               body={showAdvanced ? "Hide Advanced Details" : "Advanced Details"}
               onClick={() => setShowAdvanced((v) => !v)}
               size="sm"
               style="secondary"
-            />
+            />}
 
             {showAdvanced && (
               <Table
@@ -289,6 +298,11 @@ export default function Details() {
           </div>
         </div>
       </main>
+      <Status
+        body={visibilityStatus === "success" ? "Visibility updated" : visibilityStatus === "error" ? "Failed to update visibility" : ""}
+        type={visibilityStatus === "success" ? "confirm" : "error"}
+        onClose={() => setVisibilityStatus(null)}
+      />
     </div>
   );
 }
