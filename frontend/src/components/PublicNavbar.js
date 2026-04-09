@@ -4,7 +4,7 @@ import Button from "./Button";
 export default function PublicNavbar() {
   return (
     <nav className="w-full flex items-center justify-between px-8 py-4 bg-white">
-      <h3>IAT459</h3>
+      <h3>FigManage</h3>
       <div className="flex items-center gap-3">
         <Link to="/marketplace">
           <Button body="Marketplace" size="sm" style="secondary" />

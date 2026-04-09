@@ -80,7 +80,7 @@ export default function Sidebar({
           className="px-[1.5rem] pt-5 pb-3 cursor-pointer"
           onClick={() => navigate("/teams")}
         >
-          <h3>{activeTeam?.name || "IAT459"}</h3>
+          <h3>{activeTeam?.name || "FigManage"}</h3>
         </div>
 
         {/* Nav items */}
